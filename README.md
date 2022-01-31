@@ -1,6 +1,6 @@
-<h1 style="color: salmon"> <b>Master</b>: STM32 Embedded C Code Repo </h1>
+<h1 style="color: salmon"> <b>Load Cell</b>: STM32 Embedded C Code Repo </h1>
 
-## **TODO**: Merge the `modified` project files into each new branch:
+## **DONE**: Merge the `modified` project files into each new branch:
 ```
 modified-project-files/
 ├── CMSIS
@@ -18,8 +18,12 @@ modified-project-files/
 ## **Branch Summary**
 ```
 $ git branch -a
-* example0
+  eeprom
+  example0
+* load-cell
   master
+  touchscreen
+
 ```
 
 1. `master`: Contains the "master" code for the whole project
