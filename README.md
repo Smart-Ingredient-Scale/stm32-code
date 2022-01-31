@@ -1,6 +1,6 @@
-<h1 style="color: salmon"> <b>Master</b>: STM32 Embedded C Code Repo </h1>
+<h1 style="color: salmon"> <b>EEPROM</b>: STM32 Embedded C Code Repo </h1>
 
-## **TODO**: Merge the `modified` project files into each new branch:
+## **DONE**: Merge the `modified` project files into each new branch:
 ```
 modified-project-files/
 ├── CMSIS
