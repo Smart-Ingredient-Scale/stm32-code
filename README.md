@@ -27,6 +27,7 @@ which will eventually contain the full project. Initialized
 with similar contents to the `example0` code.
 
 2. `example0`: Contains example code for the **NUCLEO F401RE** testing:
+    * TIM2
     * TIM5
     * GPIO: PA0
 
