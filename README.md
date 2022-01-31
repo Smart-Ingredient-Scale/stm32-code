@@ -1,9 +1,20 @@
-<h1 style="color: salmon"> STM32 Embedded C Code Repo </h1>
+<h1 style="color: salmon"> <b>Master</b>: STM32 Embedded C Code Repo </h1>
 
-## **NOTE**: Use the `modified` stm32f4xx.h file:
-  * Defines the `STM32F40xx` constant
-  * Replace the 16-bit BSRRH / 16-bit BSRRL with 32-bit BSRR in GPIO_TypeDef
+## **TODO**: Merge the `modified` project files into each new branch:
+```
+modified-project-files/
+├── CMSIS
+│   └── device
+│       └── stm32f4xx.h      # Replaced the BSRR in GPIO_TypeDef
+├── src
+│   └── system_stm32f4xx.c   # Removed confusing empty braces (warning)
+└── StdPeriph_Driver
+    └── src
+        ├── stm32f4xx_gpio.c # Updated the BSRRL and BSRRH references
 
+5 directories, 3 files
+```
+ 
 ## **Branch Summary**
 ```
 $ git branch -a
@@ -16,6 +27,7 @@ which will eventually contain the full project. Initialized
 with similar contents to the `example0` code.
 
 2. `example0`: Contains example code for the **NUCLEO F401RE** testing:
+    * TIM2
     * TIM5
     * GPIO: PA0
 
