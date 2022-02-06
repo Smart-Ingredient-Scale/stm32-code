@@ -480,7 +480,7 @@ static void SystemInit_ExtMemCtl(void);
   * @param  None
   * @retval None
   */
-void SystemInit(void)
+void SystemInit(void) /* TODO: attempt to edit this configuration file! */
 {
   /* FPU settings ------------------------------------------------------------*/
   #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
