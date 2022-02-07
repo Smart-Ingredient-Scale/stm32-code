@@ -491,7 +491,7 @@ void SystemInit(void) /* TODO: attempt to edit this configuration file! */
 //  SetSysClock();
   config_system_clocks();
 
-  #if 0
+  #ifndef RYAN_CLOCK_EDITS
   /* Reset the RCC clock configuration to the default reset state ------------*/
   /* Set HSION bit */
   RCC->CR |= (uint32_t)0x00000001;
@@ -518,7 +518,7 @@ void SystemInit(void) /* TODO: attempt to edit this configuration file! */
          
   /* Configure the System clock source, PLL Multiplier and Divider factors, 
      AHB/APBx prescalers and Flash settings ----------------------------------*/
-#if 0  
+#ifndef RYAN_CLOCK_EDITS
   SetSysClock();
 #endif
   /* Configure the Vector Table location add offset address ------------------*/
@@ -651,7 +651,7 @@ void SystemCoreClockUpdate(void)
   SystemCoreClock >>= tmp;
 }
 
-#if 0 /* do NOT use HSE */
+#ifndef RYAN_CLOCK_EDITS /* do NOT use HSE */
 /**
   * @brief  Configures the System clock source, PLL Multiplier and Divider factors, 
   *         AHB/APBx prescalers and Flash settings

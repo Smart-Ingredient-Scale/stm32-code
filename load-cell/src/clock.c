@@ -23,7 +23,7 @@ void config_system_clocks(void) {
      * while the APB1 prescaler is set to 2 */
     volatile uint32_t desired_rcc_cfgr = 0x0;
 
-    desired_rcc_cfgr |= (RCC_CFGR_PPRE1_2 | RCC_CFGR_PPRE1_0); /* make sure APB2 prescaler
+    desired_rcc_cfgr |= (RCC_CFGR_PPRE1_2 | RCC_CFGR_PPRE1_0); /* make sure APB1 prescaler
                                                                 * is 2: datasheet wrong!!! */
 
     RCC->CFGR = desired_rcc_cfgr;
