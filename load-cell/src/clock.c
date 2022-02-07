@@ -1,32 +1,22 @@
 #include "stm32f4xx.h"
 #include "clock.h"
 
-/* Reconfigure AHB, APB1, and APB2 clocks */
-void config_pc9_sysclk(void) {
-    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN;
-
-    /* MCU output from SYSCLK on PC9 */
-    GPIOC->MODER &= ~(GPIO_MODER_MODER9);
-
-    /* allow higher clock output speed */
-    GPIOC->OSPEEDR |= GPIO_OSPEEDER_OSPEEDR11;
-
-    /* reconfig the system clock to be the HSI oscillator (16 MHz) */
-    RCC->CR |= RCC_CR_HSION;
-
-    while(!(RCC->CR & RCC_CR_HSIRDY)); /* wait for HSI to stabilize */
-
-    /* remux the system clock to the HSI clock */
-    RCC->CFGR &= ~(RCC_CFGR_SWS | RCC_CFGR_SW);
-}
+/* ==================== SYSTEM CLOCK CONFIG ======================= */
 
 /* Configure the PLL to get an AHB clock of 64MHz,
  * APB1 clock of 32 MHz, and APB2 clock of 64 MHz.
  * All clocks derived from HSI (16 MHz) internal oscillator. */
-void config_pll_from_hsi(void) {
+void config_system_clocks(void) {
     /* make sure the internal oscillator is on AND ready */
     RCC->CR |= RCC_CR_HSION;
     while(!(RCC->CR & RCC_CR_HSIRDY));
+
+    /* Select regulator voltage output Scale 1 mode */
+    RCC->APB1ENR |= RCC_APB1ENR_PWREN;
+    PWR->CR |= PWR_CR_VOS;
+
+    /* Configure Flash prefetch, Instruction cache, Data cache and wait state */
+    FLASH->ACR = FLASH_ACR_PRFTEN | FLASH_ACR_ICEN |FLASH_ACR_DCEN |FLASH_ACR_LATENCY_2WS;
 
     /* Make sure the 16MHz clock is being used as the system clock,
      * and also configure the AHB and APB2 prescalers to be 1 
@@ -69,12 +59,47 @@ void config_pll_from_hsi(void) {
 
     /* make sure the RCC is configured for deriving the system clock
      * from the output of the PLL */
-    desired_rcc_cfgr = RCC->CFGR;
-    desired_rcc_cfgr &= ~(RCC_CFGR_SW |
-                          RCC_CFGR_SWS);
-    
-    desired_rcc_cfgr |= (RCC_CFGR_SWS_1 | /* PLL output becomes SYSCLK */
-                         RCC_CFGR_SW_1);
+    RCC->CFGR |= RCC_CFGR_SW_1;     /* PLL output becomes SYSCLK */
 
-    RCC->CFGR = desired_rcc_cfgr;
+    /* wait for system clock (just activated from PLL) to settle by polling status */
+    while ((RCC->CFGR & RCC_CFGR_SWS ) != RCC_CFGR_SWS_PLL);
+}
+
+/* ==================== MICRO_WAIT ======================= */
+
+/* Configure the SysTick internal countdown timer to activate an ISR
+ * upon counter underflow. Make an ISR count the number of these 
+ * overflow events, and set a flag when done while CPU polls flag */
+void micro_wait(uint32_t microsDelay) {
+
+    uint32_t ahbClocksToDelay = microsDelay * AHB_CLKS_PER_US;
+    uint32_t maxSystickOverflows = ahbClocksToDelay >> SYSTICK_COUNTDOWN_BITS;
+    uint32_t residualClocks = ahbClocksToDelay - (maxSystickOverflows << SYSTICK_COUNTDOWN_BITS);
+
+    /* waste clocks for amount of maximum Systick delays in the microsDelay */
+    while(maxSystickOverflows) {
+        activate_systick_no_isr(SYSTICK_COUNTDOWN_MAX);
+        while(!(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk));
+        maxSystickOverflows--;
+    }
+
+    /* waste the rest of the clocks */
+    if(residualClocks != 0) {
+        activate_systick_no_isr(residualClocks);
+        while(!(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk));
+    }        
+
+    return;
+}
+
+/* Configure the SysTick timer to operate directly from the 64MHz
+ * AHB bus clock (HCLK). activate its ISR after `numClocks`. 
+ * `numClocks` can only be 24-bit value. */
+void activate_systick_no_isr(uint32_t numAhbClocks) {
+    /* ==== See page 251 of STM32F4xx programming manual ==== */
+    numAhbClocks &= SYSTICK_COUNTDOWN_MAX; /* only keep the 24 LSBs */
+
+    SysTick->LOAD = numAhbClocks;           /* counter start value */
+    SysTick->VAL |= SYSTICK_COUNTDOWN_MAX;  /* clear the counter */
+    SysTick->CTRL = 0x5;                    /* use AHB clock and begin counting */
 }

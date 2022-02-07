@@ -16,20 +16,19 @@
 
 #define ONE_MILLION 1000000
 
+	/* TODO: replace SystemInit() in startup_stm32f4xx.c */
 int main(void) {
-	config_pll_from_hsi(); 	/* TODO: replace SystemInit() in startup_stm32f4xx.c */
-	
-	/* Conifugre the PA5 Nucleo Board LED pin for output */
+	/* Configure the PA5 Nucleo Board LED pin for output */
 	config_pa5_nucleo_ld2();
 
-	load_cell_init(); /* configure TIM4 CH4 and other peripherals */
+	// load_cell_init(); /* configure TIM4 CH4 and other peripherals */
 
 	for(;;) {
-#if 0
-    set_pa0();
-    for(uint32_t i = 0; i < ONE_MILLION*3; i++);
-    clear_pa0();
-    for(uint32_t i = 0; i < ONE_MILLION*3; i++);
+#if 1
+    set_pa5(); /* toggle the eval board green LED */
+    micro_wait(1000);
+    clear_pa5();
+    micro_wait(1000);
 #endif
 	}
 }

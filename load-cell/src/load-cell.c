@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include "load-cell.h"
 #include "clock.h"
+#include "gpio.h"
 
 #ifndef CPU_CLK
 #define CPU_CLK 16000000

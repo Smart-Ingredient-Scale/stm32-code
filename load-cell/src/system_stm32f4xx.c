@@ -315,6 +315,7 @@
   */
 
 #include "stm32f4xx.h"
+#include "clock.h"
 
 /**
   * @}
@@ -486,6 +487,11 @@ void SystemInit(void) /* TODO: attempt to edit this configuration file! */
   #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
     SCB->CPACR |= ((3UL << 10*2)|(3UL << 11*2));  /* set CP10 and CP11 Full Access */
   #endif
+  
+//  SetSysClock();
+  config_system_clocks();
+
+  #if 0
   /* Reset the RCC clock configuration to the default reset state ------------*/
   /* Set HSION bit */
   RCC->CR |= (uint32_t)0x00000001;
@@ -504,6 +510,7 @@ void SystemInit(void) /* TODO: attempt to edit this configuration file! */
 
   /* Disable all interrupts */
   RCC->CIR = 0x00000000;
+#endif
 
 #if defined(DATA_IN_ExtSRAM) || defined(DATA_IN_ExtSDRAM)
   SystemInit_ExtMemCtl(); 
@@ -511,8 +518,9 @@ void SystemInit(void) /* TODO: attempt to edit this configuration file! */
          
   /* Configure the System clock source, PLL Multiplier and Divider factors, 
      AHB/APBx prescalers and Flash settings ----------------------------------*/
+#if 0  
   SetSysClock();
-
+#endif
   /* Configure the Vector Table location add offset address ------------------*/
 #ifdef VECT_TAB_SRAM
   SCB->VTOR = SRAM_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
@@ -643,6 +651,7 @@ void SystemCoreClockUpdate(void)
   SystemCoreClock >>= tmp;
 }
 
+#if 0 /* do NOT use HSE */
 /**
   * @brief  Configures the System clock source, PLL Multiplier and Divider factors, 
   *         AHB/APBx prescalers and Flash settings
@@ -871,6 +880,9 @@ static void SetSysClock(void)
 #endif /* USE_HSE_BYPASS */  
 #endif /* STM32F40_41xxx || STM32F427_437xx || STM32F429_439xx || STM32F401xx || STM32F469_479xx */  
 }
+
+#endif /* if 0 */
+
 #if defined (DATA_IN_ExtSRAM) && defined (DATA_IN_ExtSDRAM)
 #if defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx) ||\
     defined(STM32F469xx) || defined(STM32F479xx)
