@@ -1,0 +1,12 @@
+Week 6 Progress Report Talking Points:
+
+(1) HX711 Datasheet Corrections + Verification
+
+(2) Acquiring PCB Footprints and Verifying: PCB dimensions
+
+(3) Finished HX711 PCB Subcircuit
+
+(4) 
+
+
+General note: determine how to import a video!

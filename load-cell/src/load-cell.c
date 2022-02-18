@@ -4,37 +4,23 @@
 #include "clock.h"
 #include "gpio.h"
 
-#ifndef CPU_CLK
-#define CPU_CLK 16000000
-#endif /* CPU_CLK */
-#define SD_OUT_PIN      8       /* PB8 for HX711 serial data out */
-#define TIM4_PSC_CLK    1000    /* 1000 Hz prescaler clock */
-#define UEV_FREQUENCY   80      /* 80 Hz UEV event freqeuncy */
-
-// TODO: Override the ISR for TIM4 to sample a digital pin and count
-// number of pwm-generated clocks to deactivate the PWM but make sure
-// to keep checking if the GPIO pin has been driven low (more data
-// available and then check the line again
-
-/* (1) Channel A 128 gain = 25 clks : all posedge clocks sent to HX711
- * (2) Channel B 32 gain = 26 clks
- * (3) Channel A 64 gain = 27 clks */
-static enum HX711_Clk_Config {CHA_128_GAIN=25, CHB_32_GAIN=26, CHA_64_GAIN=27};
-static enum HX711_Data_Status {DATA_READY, DATA_UNAVAILABLE};
-static enum HX711_Retrieval_Status {RECEIVING_DATA, CONFIGURING_CHANNEL, INACTIVE};
-
+/* HX711 FSM state flags / values */
+static enum HX711ChanConfig_t clks_per_sample = CHA_64_GAIN; /* doesn't change */
+static enum Tim4IrqState_t state;
+static enum HX711SamplingRate_t f_sample = HZ10; /* hard-code sampling rate */
 
 /* Function declarations */
-static void config_pb9_pwm(void);
 static void config_pb8_digitalIO(void);
-static void config_tim4_ch4(void);
+static void config_pb9_pwm(void);
+static void config_tim4_ch4(enum HX711SamplingRate_t);
+static void update_sample(uint32_t newSampleBits);
+static inline void disable_sdclk_pwm(void);
+static inline void enable_sdclk_pwm(void);
+static inline uint32_t hx711_data_bit(void);
+static inline enum HX711DataStatus_t hx711_data_ready(void);
 
-/* Global variables */
-static enum HX711_Retrieval_Status retrievalStatus;
-static enum HX711_Data_Status icStatus;
-static const enum HX711_Clk_Config clkMode = CHA_64_GAIN; /* doesn't change */
-
-/* Set PB9 for AF = 2 (TIM_CH4 output pin) */
+/* Set PB9 for AF = 2 (TIM_CH4 output pin) since it will operate as
+ * the clock used for getting data from the HX711 IC */
 static void config_pb9_pwm(void) {
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;
 
@@ -50,28 +36,31 @@ static void config_pb9_pwm(void) {
     GPIOB->AFR[1] |= 0x20;    /* define PB9 for AF 2 */
 }
 
-/* Configure PB8 for digital IO. Used to read the digital line
+/* Configure PB8 for digital IO. Used to read the digital input line
  * on the HX711 IC via bit-banging. Called by TIM4 ISR. */
-static void config_pb8_digitialIO(void) {
+static void config_pb8_digitalIO(void) {
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;
 
     /* configure PB8 for digital input */
     GPIOB->MODER &= ~GPIO_MODER_MODER8;
-
     GPIOB->PUPDR &= ~GPIO_PUPDR_PUPDR8; /* no biasing resistor */
 }
 
 /* Configure TIM4 for HX711 IC clock generation using TIM4 CH4 
  * on PB9 GPIO pin. Gets fed with the APB1 bus clock (32MHz) */
-static void config_tim4_ch4(void) {
+static void config_tim4_ch4(enum HX711SamplingRate_t fs) {
+    f_sample = fs; /* update the global variable */
+    
+    /* enable the timer peripheral */
     RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;
 
     TIM4->CR1 = 0;
-    TIM4->CR1 |= TIM_CR1_ARPE;  /* allow for dynamic changing of the ARR (adjust PWM duty cycle) */
+    TIM4->CR1 |= TIM_CR1_ARPE;  /* allow for changing the UEV ISR
+                                 * firing frequency */
 
-    /* Divide down the 64MHz CPU clk to get the proper ISR firing rate */
-    TIM4->PSC = APB1_CLK / TIM4_PSC_CLK - 1;
-    TIM4->ARR = 1000 - 1; // TODO: change to UEV_FREQUENCY
+    /* Divide down the 32MHz TIM4 clk to get proper ISR firing rate */
+    TIM4->PSC = TIM4_CLK / TIM4_PSC_CLK - 1;
+    TIM4->ARR = TIM4_PSC_CLK / (2 * fs) - 1; /* fire twice as fast as needed (20Hz or 160Hz) */
 
     /* reset values for triggers and other irrelevant settings */
     TIM4->CR2 = 0;
@@ -80,7 +69,7 @@ static void config_tim4_ch4(void) {
     /* (1) Update event ISR will sample the serial data line */
     TIM4->DIER |= (TIM_DIER_UIE);
 
-    /* Configure TIM4 channel 4 PWM Mode 1 (see frm pg. 464-467) */
+    /* Configure TIM4 channel 4 PWM Mode 2 (see frm pg. 464-467) */
     TIM4->CCMR2 &= ~(TIM_CCMR2_CC4S  |  /* configure CCR4 CH4 for output */
                      TIM_CCMR2_OC4FE |  /* configure CCR4 for normal-speed operation */
                      TIM_CCMR2_OC4PE |  /* clear the preload enable for CH4 */
@@ -93,51 +82,146 @@ static void config_tim4_ch4(void) {
     TIM4->CCER &= ~(TIM_CCER_CC4NP |    /* do NOT invert output */
                     TIM_CCER_CC4P);     /* treat output at as active high */
 
-    TIM4->CCER |= TIM_CCER_CC4E;        /* mux the CC4 output to the GPIO (PB9) pin */
-
-    TIM4->CCR4 = (TIM4->ARR >> 1);  /* 50% duty cycle clock */
+    TIM4->CCR4 = ((TIM4_PSC_CLK / SD_CLK_FREQEUNCY) >> 1);      /* 50% duty cycle of SDCLK */
 
     /* Enable the interrrupts in the NVIC */
     NVIC_EnableIRQ(TIM4_IRQn);
     NVIC_SetPriority(TIM4_IRQn, 0);
+}
 
-    /* Enable the timer to begin counting */
+/* enable the load cell by activating timer 4 (init first) */
+void load_cell_enable(void) {
     TIM4->CR1 |= TIM_CR1_CEN;
 }
 
-volatile uint8_t pa5outStatus = 0;
-/* Redefined the TIM4 IRQ handler */
-void TIM4_IRQHandler(void) {
-    TIM4->SR &= ~(TIM_SR_UIF);
-
-	if(pa5outStatus == 1)
-        clear_pa5();
-    else
-        set_pa5();
-
-    pa5outStatus ^= 1;
+/* disable the load cell by activating timer 4 (init first) */
+void load_cell_disable(void) {
+    TIM4->CR1 &= ~(TIM_CR1_CEN);
 }
 
-/* Configure the TIM4 UEV ISR for the 80Hz clock supplied. Use the 
-* statically-global HX711_Biasing_Type data structure to determine
-* how many clocks to generate (specifies the gain and input channel).  */
 
 
-/* Read from the active-low serial data output port of the HX711
+static volatile uint8_t clk_count = 0;
+static volatile uint32_t newestSample = 0;           /* last 24-bit ADC sample */
+/* The TIM4 IRQ handler should fire at least 10kHz or else the
+ * ADC will power down. Will poll to see if data is available
+ * on the HX711 (SDATA = 0). If so, begins reading data and
+ * updates the moving average. Will only fire at the negedge
+ * of the SDCLK due to the ARR configuration of TIM4 */
+void TIM4_IRQHandler(void) {
+    TIM4->SR &= ~(TIM_SR_UIF); /* acknowledge the ISR */
+
+    if(state == IDLE0) { /* check for available data on SDOUT */
+        if(hx711_data_ready() == READY) {
+            /* configure ISR for sampling at SDCLK rate */
+            TIM4->ARR = TIM4_PSC_CLK / SD_CLK_FREQEUNCY - 1;
+            state = IDLE1;
+        }
+    }
+
+    /* going to activate SDCLK (PWM) and clears clk count and new sample */
+    else if (state == IDLE1) {
+        enable_sdclk_pwm();     /* activate PWM immediately upon UEV */
+        state = RECEIVING_DATA;
+        clk_count = 0;
+        newestSample = 0;
+    }
+
+    /* read 24-bits of ADC information into newest sample MSB-first */
+    else if(state == RECEIVING_DATA) {
+        clk_count++;
+
+        newestSample |= (hx711_data_bit() << (NUM_BITS_PER_SAMPLE - clk_count));
+
+        if(clk_count == NUM_BITS_PER_SAMPLE) {
+            state = CONFIGURING_CHANNEL; /* configure next ADC conversion */
+            update_sample(newestSample);
+        }
+    }
+
+    /* vary number of extra clocks to configure next channel read */
+    else {
+        if(++clk_count == clks_per_sample) {
+            disable_sdclk_pwm();       /* disable SDCLK before a posedge */
+            TIM4->ARR = TIM4_PSC_CLK / (2 * f_sample); /* change to lower sampling frequency */
+            state = IDLE0;
+        }
+    }
+}
+
+/* Read from the active-low serial data output pin on the HX711
  * IC to determine if data is ready. Read on PB8. */
-static enum HX711_Data_Status get_hx711_data_status(void) {
-    if(GPIOB->IDR & (1 << SD_OUT_PIN)) {
-        return DATA_UNAVAILABLE;
+static inline enum HX711DataStatus_t hx711_data_ready(void) {
+    if(GPIOB->IDR & (1 << SD_OUT_PIN)) { /* pin is high */
+        return UNAVAILABLE;
+    }
+
+    else { /* pin is low */
+        return READY;
+    }
+}
+
+/* Return 32'b0 or 32'b1 depending on whether PB8 is set */
+static inline volatile uint32_t hx711_data_bit(void) {
+    return((GPIOB->IDR >> SD_OUT_PIN) & 0x1);
+}
+
+/* Initializes the load cell and supporting peripherals to
+ * read data at the sampling rate. Will handle the protocol
+ * format based upon chosen channel and gain and sampling
+ * rate. This sampling rate & channel must match hardware. */
+void load_cell_init(enum HX711SamplingRate_t fs, enum HX711ChanConfig_t chanCfg) {
+    clks_per_sample = chanCfg; /* channel configuration determines number
+                                * of SDCLKs after the 24 bits of
+                                * ADC data is read. */
+    /* configure GPIOs */
+    config_pb8_digitalIO();
+    config_pb9_pwm();
+    
+    /* configure the TIM4 periperal w/ proper sampling rate */
+    config_tim4_ch4(fs);
+}
+
+/* enable TIM5 CH4 PWM output */
+static inline void enable_sdclk_pwm(void) {
+    TIM4->CCER |= (TIM_CCER_CC4E);
+}
+
+/* enable TIM5 CH4 PWM output */
+static inline void disable_sdclk_pwm(void) {
+    TIM4->CCER &= ~(TIM_CCER_CC4E);
+}
+
+HX711_Data_t adc; /* sample storage data structure */
+
+/* Adds a 2-s complement ADC sample (24 bits long) into the 
+ * sample storage average data structure. Updates the moving average. */
+static void update_sample(uint32_t newSampleBits) {
+    int32_t sampleToReplace = adc.samples[adc.nextUpdatedInd];
+
+    int32_t newSample; /* signed 32-bit version of new sample */
+
+    /* sign extend the new sample into a 32-bit 2's complement integer */
+    if(newSampleBits & (1 << (NUM_BITS_PER_SAMPLE - 1))) {
+        newSample = (int32_t) (newSampleBits |= 0xFF000000);
     }
 
     else {
-        return DATA_READY;
+    	newSample = (int32_t) newSampleBits;
     }
-}
 
-/* Initializes the load cell and supporting peripherals */
-void load_cell_init(void) {
-    config_pb8_digitialIO();
-    config_pb9_pwm();
-    config_tim4_ch4();
+    /* remove the weight of the sample about to be replaced */
+    adc.cumulativeSum -= sampleToReplace;
+
+    /* add the weight of the sample to replace the old sample */
+    adc.cumulativeSum += newSample;
+    
+    /* replace the sample in the array and update the index */
+    adc.samples[adc.nextUpdatedInd] = newSample;
+    if(++adc.nextUpdatedInd == NUM_STORED_SAMPLES) {
+        adc.nextUpdatedInd = 0;
+    }
+
+    /* update the moving average */
+    adc.movingAverage = adc.cumulativeSum >> NUM_STORED_SAMPLES_BITSHIFT;
 }
