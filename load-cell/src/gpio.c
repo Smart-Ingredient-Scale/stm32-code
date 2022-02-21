@@ -10,6 +10,8 @@ void config_pa5_nucleo_ld2(void) {
     GPIOA->MODER |= GPIO_MODER_MODER5_0;
 
     GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPDR5);
+
+    GPIOA->OSPEEDR |= GPIO_OSPEEDER_OSPEEDR5;
 };
 
 void set_pa5(void) {

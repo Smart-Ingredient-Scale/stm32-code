@@ -84,7 +84,7 @@ static void config_tim4_ch4(enum HX711SamplingRate_t fs) {
 
     TIM4->CCR4 = ((TIM4_PSC_CLK / SD_CLK_FREQEUNCY) >> 1);      /* 50% duty cycle of SDCLK */
 
-    /* Enable the interrrupts in the NVIC */
+    /* Enable the interrupts in the NVIC */
     NVIC_EnableIRQ(TIM4_IRQn);
     NVIC_SetPriority(TIM4_IRQn, 0);
 }

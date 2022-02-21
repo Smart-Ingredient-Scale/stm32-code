@@ -54,10 +54,12 @@
 #define SYSTICK_COUNTDOWN_BITS   24
 #define US_PER_SEC              1000000U
 #define AHB_CLKS_PER_US         (AHB_CLK / US_PER_SEC)
+#define AHB_CLOCKS_FOR_SYSTICK_INIT 170U
 
 /* function declarations */
 void config_system_clocks(void);
 void micro_wait(uint32_t microsDelay);
 void activate_systick_no_isr(uint32_t numAhbClocks);
+void activate_systick_isr(uint32_t numAhbClocks);
 
 #endif /* CLOCK_H */
