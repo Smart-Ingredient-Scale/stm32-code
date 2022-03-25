@@ -30,7 +30,9 @@ static void config_pb9_pwm(void) {
 
     GPIOB->OTYPER &= ~GPIO_OTYPER_IDR_9; /* push-pull output pin */
 
-    GPIOB->PUPDR &= ~GPIO_PUPDR_PUPDR9; /* no pull-up or pull-down resistor */
+    /* activate a pull-down resistor for when PWM inactive (HI-Z) GPIO */
+    GPIOB->PUPDR &= ~GPIO_PUPDR_PUPDR9;
+    GPIOB->PUPDR |= GPIO_PUPDR_PUPDR9_1;
 
     GPIOB->AFR[1] &= ~0xF0;  /* clear the PB9 AF bits */
     GPIOB->AFR[1] |= 0x20;    /* define PB9 for AF 2 */

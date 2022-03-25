@@ -18,7 +18,7 @@
 #include "spi-oled.h"
 #include <stdio.h>
 
-#define CLOCK_TEST
+//#define CLOCK_TEST
 #define TEST_HX711 1
 
 //static char line1[MAX_CHARS_PER_LINE];
