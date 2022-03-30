@@ -23,7 +23,7 @@ void config_system_clocks(void) {
      * while the APB1 prescaler is set to 2 */
     volatile uint32_t desired_rcc_cfgr = 0x0;
 
-    desired_rcc_cfgr |= (RCC_CFGR_PPRE1_2 | RCC_CFGR_PPRE1_0); /* make sure APB1 prescaler
+    desired_rcc_cfgr |= (RCC_CFGR_PPRE1_2 | RCC_CFGR_PPRE1_0); /* make sure APB2 prescaler
                                                                 * is 2: datasheet wrong!!! */
 
     RCC->CFGR = desired_rcc_cfgr;
@@ -70,32 +70,24 @@ void config_system_clocks(void) {
 /* Configure the SysTick internal countdown timer to activate an ISR
  * upon counter underflow. Make an ISR count the number of these 
  * overflow events, and set a flag when done while CPU polls flag */
-static volatile uint8_t systickIsrFlag = 0;
-
 void micro_wait(uint32_t microsDelay) {
+
     uint32_t ahbClocksToDelay = microsDelay * AHB_CLKS_PER_US;
     uint32_t maxSystickOverflows = ahbClocksToDelay >> SYSTICK_COUNTDOWN_BITS;
     uint32_t residualClocks = ahbClocksToDelay - (maxSystickOverflows << SYSTICK_COUNTDOWN_BITS);
-    volatile uint8_t lastStatus;
-
-    if(residualClocks <= AHB_CLOCKS_FOR_SYSTICK_INIT) {
-        return;
-    }
 
     /* waste clocks for amount of maximum Systick delays in the microsDelay */
     while(maxSystickOverflows) {
-        lastStatus = systickIsrFlag;
-        activate_systick_isr(SYSTICK_COUNTDOWN_MAX);
-        while(systickIsrFlag == lastStatus);     /* wait for underflow */
+        activate_systick_no_isr(SYSTICK_COUNTDOWN_MAX);
+        while(!(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk));
         maxSystickOverflows--;
     }
 
     /* waste the rest of the clocks */
     if(residualClocks != 0) {
-        lastStatus = systickIsrFlag;
-        activate_systick_isr(residualClocks - AHB_CLOCKS_FOR_SYSTICK_INIT);
-        while(systickIsrFlag == lastStatus);    /* wait for underflow */
-    }
+        activate_systick_no_isr(residualClocks);
+        while(!(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk));
+    }        
 
     return;
 }
@@ -110,19 +102,4 @@ void activate_systick_no_isr(uint32_t numAhbClocks) {
     SysTick->LOAD = numAhbClocks;           /* counter start value */
     SysTick->VAL |= SYSTICK_COUNTDOWN_MAX;  /* clear the counter */
     SysTick->CTRL = 0x5;                    /* use AHB clock and begin counting */
-}
-
-/* Activate the ISR intended for micro_wait() */
-void activate_systick_isr(uint32_t numAhbClocks) {
-    /* ==== See page 251 of STM32F4xx programming manual ==== */
-    numAhbClocks &= SYSTICK_COUNTDOWN_MAX; /* only keep the 24 LSBs */
-
-    SysTick->LOAD = numAhbClocks;           /* counter start value */
-    SysTick->VAL |= SYSTICK_COUNTDOWN_MAX;  /* clear the counter */
-    SysTick->CTRL = 0x7;                    /* use AHB clock, activate ISR on overflow, and begin counting */
-}
-
-/* Override the Systick ISR for the micro_wait() function */
-void SysTick_Handler(void) {
-	systickIsrFlag ^= 0x1;
 }

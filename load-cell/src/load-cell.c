@@ -1,4 +1,5 @@
 #include "stm32f4xx.h"
+#include "stm32f4xx_exti.h"
 #include <stdint.h>
 #include "load-cell.h"
 #include "clock.h"
@@ -19,6 +20,8 @@ static inline void enable_sdclk_pwm(void);
 static inline uint32_t hx711_data_bit(void);
 static inline enum HX711DataStatus_t hx711_data_ready(void);
 
+int32_t zeroADCVal = -64600;
+
 /* Set PB9 for AF = 2 (TIM_CH4 output pin) since it will operate as
  * the clock used for getting data from the HX711 IC */
 static void config_pb9_pwm(void) {
@@ -31,6 +34,7 @@ static void config_pb9_pwm(void) {
     GPIOB->OTYPER &= ~GPIO_OTYPER_IDR_9; /* push-pull output pin */
 
     GPIOB->PUPDR &= ~GPIO_PUPDR_PUPDR9; /* no pull-up or pull-down resistor */
+    GPIOB->PUPDR |= GPIO_PUPDR_PUPDR9_1;
 
     GPIOB->AFR[1] &= ~0xF0;  /* clear the PB9 AF bits */
     GPIOB->AFR[1] |= 0x20;    /* define PB9 for AF 2 */
@@ -224,4 +228,70 @@ static void update_sample(uint32_t newSampleBits) {
 
     /* update the moving average */
     adc.movingAverage = adc.cumulativeSum >> NUM_STORED_SAMPLES_BITSHIFT;
+}
+
+int32_t convert(int32_t x)
+{
+    x -= zeroADCVal;
+    x = x * 1000 / 11200;
+    return x;
+}
+
+void init_button()
+{
+    RCC -> AHB1ENR |= RCC_AHB1ENR_GPIOCEN; //enable port C
+    GPIOC->MODER &= ~GPIO_MODER_MODER0; // Set PC0 to input
+    GPIOC->PUPDR &= ~GPIO_PUPDR_PUPDR0;
+    GPIOC->PUPDR |= GPIO_PUPDR_PUPDR0_1; // Set PC0 to pull down
+}
+
+// Touch screen press (debounced)
+void EXTI0_IRQHandler(void)
+{
+    if(EXTI_GetITStatus(EXTI_Line0) == SET)
+    {
+        // Disable EXTI line until debounce
+        EXTI_InitTypeDef EXTI_InitStruct;
+        EXTI_InitStruct.EXTI_Line = EXTI_Line0;
+        EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
+        EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
+        EXTI_InitStruct.EXTI_LineCmd = DISABLE;
+        EXTI_Init(&EXTI_InitStruct);
+
+        /* Clear the EXTI line 0 pending bit */
+        EXTI_ClearITPendingBit(EXTI_Line0);
+
+        zeroADCVal = adc.movingAverage;
+        micro_wait(500);
+
+        EXTI_InitStruct.EXTI_Line = EXTI_Line0;
+        EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
+        EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
+        EXTI_InitStruct.EXTI_LineCmd = ENABLE;
+        EXTI_Init(&EXTI_InitStruct);
+    }
+}
+
+void init_button_interrupt()
+{
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
+    // Select the input source pin for the EXTI line
+    SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOC, EXTI_PinSource0);
+
+    // Select the mode(interrupt, event) and configure the trigger selection (Rising, falling or both)
+    EXTI_InitTypeDef EXTI_InitStruct;
+    EXTI_InitStruct.EXTI_Line = EXTI_Line0;
+    EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
+    EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
+    EXTI_InitStruct.EXTI_LineCmd = ENABLE;
+    EXTI_Init(&EXTI_InitStruct);
+
+    // Configure NVIC IRQ channel mapped to the EXTI line
+    NVIC_InitTypeDef   NVIC_InitStructure;
+    NVIC_InitStructure.NVIC_IRQChannel = EXTI0_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x0F;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x0F;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
 }

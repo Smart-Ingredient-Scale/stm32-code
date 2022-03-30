@@ -42,5 +42,8 @@ enum Tim4IrqState_t {IDLE0, IDLE1, RECEIVING_DATA, CONFIGURING_CHANNEL};
 void load_cell_init(enum HX711SamplingRate_t fs, enum HX711ChanConfig_t chanCfg);
 void load_cell_enable(void);
 void load_cell_disable(void);
+int32_t convert(int32_t x);
+void init_button();
+void init_button_interrupt();
 
 #endif /* LOAD_CELL_H */
