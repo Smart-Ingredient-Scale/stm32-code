@@ -1,3 +1,6 @@
 .metadata/*
 .metadata/.*
 RemoteSystemsTempFiles/*
+.vscode
+Debug/
+*Run.cfg

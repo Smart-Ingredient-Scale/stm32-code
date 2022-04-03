@@ -836,6 +836,9 @@ void SPI_I2S_SendData(SPI_TypeDef* SPIx, uint16_t Data)
   
   /* Write in the DR register the data to be sent */
   SPIx->DR = Data;
+
+  //
+  while ((SPIx->SR & SPI_SR_TXE) != 0); // Busy (BSY) flag
 }
 
 /**
