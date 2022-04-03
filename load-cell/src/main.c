@@ -18,7 +18,21 @@
 #include <stdio.h>
 #include "spi-ss.h"
 
-extern HX711_Data_t adc;                /* contains samples and moving average! */
+//#define CLOCK_TEST
+#define TEST_HX711 1
+
+//static char line1[MAX_CHARS_PER_LINE];
+
+#if TEST_HX711 && !defined(CLOCK_TEST)
+static char line2[MAX_CHARS_PER_LINE];
+extern HX711_Data_t adc;				/* contains samples and moving average! */
+#endif /* TEST_HX711 */
+
+#ifdef CLOCK_TEST
+static inline void enable_tim_clock(TIM_TypeDef *TIMx);
+void config_tim_uev(TIM_TypeDef *TIMx, enum IRQn IRQnum);
+
+#endif /* CLOCK_TEST */
 
 #define ONE_MILLION 1000000
 
