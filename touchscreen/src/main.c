@@ -120,7 +120,7 @@ int main(void)
 //     panic("panic messages123456789123456789sdhfaklsjhfaslk");
 
     struct Screen *cur_screen = &home_screen;
-    draw_home_screen("test1", "test2", "test3");
+    draw_home_screen("test10", "test2", "test3");
 
 
 

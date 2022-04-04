@@ -4,3 +4,5 @@ RemoteSystemsTempFiles/*
 .vscode
 Debug/
 *Run.cfg
+.DS_Store
+.settings
