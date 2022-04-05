@@ -16,8 +16,18 @@
 #define LINE_WIDTH							6
 #define LINE_OFFSET							(LINE_WIDTH/2)
 
-
 #define MAX_BUTTONS_PER_SCREEN				7
+
+
+#define DISPLAY_STRING_WITH_HIGHLIGHT(_statment, _x, _y, _text, _mode) { \
+	if (_statment) { BSP_LCD_SetBackColor(LCD_THEME_COLOR3); } \
+	BSP_LCD_DisplayStringAt(_x, _y, _text, _mode); \
+	if (_statment) { BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR); } \
+}
+
+#define DISPLAY_STRING_WITH_SELECTION(_cur_sel, _x, _y, _text, _mode) DISPLAY_STRING_WITH_HIGHLIGHT((vol_sel -> cur_selection) == _cur_sel, _x, _y, _text, _mode)
+#define DISPLAY_STRING_WITH_UNITS(_units, _x, _y, _text, _mode) DISPLAY_STRING_WITH_HIGHLIGHT(unit == _units, _x, _y, _text, _mode)
+
 
 struct Button
 {
@@ -35,8 +45,6 @@ struct Screen
 	uint8_t id;
 	struct Button *buttons;
 	uint8_t num_buttons;
-	//struct Active *active_zones;
-	uint8_t is_displayed;
 };
 
 // IDs
@@ -110,10 +118,12 @@ typedef enum {
 	UNITS_MILLILITERS
 } units_t;
 
+#define VOL_CAL_INPUT_BOX_COUNT 4
+// ^ number of boxes to input a digit or period, excludes unites
 
-#define VOL_CAL_NUM_CHARS 4
 #define VOL_CAL_PERIOD_IDX 20
 #define VOL_CAL_CHARS "0\0001\0002\0003\0004\0005\0006\0007\0008\0009\000.\000"
+
 #define VOL_CAL_UNITS_LENGTH 5
 // ^ length of the units string + null byte
 #define VOL_CAL_UNITS "cups\000mL  \000unit\000"

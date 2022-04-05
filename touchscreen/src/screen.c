@@ -1,16 +1,24 @@
 #include "stm32f4xx.h"
 
-// #include <stdio.h>
-
-// #include "ili9341.h"
 #include "screen.h"
 #include "stm32_adafruit_lcd.h"
 #include "ili9341.h"
 
+// Usage:
+// Call BSP_LCD_Init() to init the display
+// expose the following variables like so:
 
-// Item IDs:
-// 1 - 4 : screens
-// 5 - 9
+//// Use the following to switch between screens ////
+// extern struct Screen home_screen;
+// extern struct Screen information_screen;
+// extern struct Screen vol_cal_screen;
+// extern struct Screen mass_cal_screen;
+
+//// Use the following to see what volume the user has input, and the current unit that the user has selected to display on the 8-seg ////
+// extern struct VolumeSelection volume_selection;
+// extern units_t cur_display_unit;
+
+// Call process_button with the relevant button id to update the screen
 
 
 char vol_cal_chars[] = VOL_CAL_CHARS;
@@ -171,29 +179,25 @@ struct Button mass_cal_screen_buttons[MAX_BUTTONS_PER_SCREEN] = {
 struct Screen home_screen = {
     .id = HOME_SCREEN_ID,
     .buttons = home_screen_buttons,
-    .num_buttons = 5,
-    .is_displayed = 0
+    .num_buttons = 5
 };
 
 struct Screen information_screen = {
     .id = INFORMATION_SCREEN_ID,
     .buttons = information_screen_buttons,
-    .num_buttons = 6,
-    .is_displayed = 0
+    .num_buttons = 6
 };
 
 struct Screen vol_cal_screen = {
     .id = VOLUME_CALIBRATION_SCREEN_ID,
     .buttons = vol_cal_screen_buttons,
-    .num_buttons = 6,
-    .is_displayed = 0
+    .num_buttons = 6
 };
 
 struct Screen mass_cal_screen = {
     .id = MASS_CALIBRATION_SCREEN_ID,
     .buttons = mass_cal_screen_buttons,
-    .num_buttons = 2,
-    .is_displayed = 0
+    .num_buttons = 2
 };
 
 
@@ -252,22 +256,10 @@ void draw_information_screen(char *ingedient_name, units_t unit, char *density) 
     // Middle row
     BSP_LCD_DisplayStringAt(-60, 190, (uint8_t *)"Unit:", CENTER_MODE);
     
-    if (unit == UNITS_GRAMS) { BSP_LCD_SetBackColor(LCD_THEME_COLOR3); }
-    BSP_LCD_DisplayStringAt(20, 190, (uint8_t *)"g", CENTER_MODE);
-    if (unit == UNITS_GRAMS) { BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR); }
-
-    if (unit == UNITS_POUNDS) { BSP_LCD_SetBackColor(LCD_THEME_COLOR3); }
-    BSP_LCD_DisplayStringAt(70, 190, (uint8_t *)"lb", CENTER_MODE);
-    if (unit == UNITS_POUNDS) { BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR); }
-
-    if (unit == UNITS_OUNCES) { BSP_LCD_SetBackColor(LCD_THEME_COLOR3); }
-    BSP_LCD_DisplayStringAt(120, 190, (uint8_t *)"oz", CENTER_MODE);
-    if (unit == UNITS_OUNCES) { BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR); }
-
-    if (unit == UNITS_MILLILITERS) { BSP_LCD_SetBackColor(LCD_THEME_COLOR3); }
-    BSP_LCD_DisplayStringAt(170, 190, (uint8_t *)"mL", CENTER_MODE);
-    if (unit == UNITS_MILLILITERS) { BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR); }
-
+    DISPLAY_STRING_WITH_UNITS(UNITS_GRAMS, 20, 190, (uint8_t *)"g", CENTER_MODE);
+    DISPLAY_STRING_WITH_UNITS(UNITS_POUNDS, 70, 190, (uint8_t *)"lb", CENTER_MODE);
+    DISPLAY_STRING_WITH_UNITS(UNITS_OUNCES, 120, 190, (uint8_t *)"oz", CENTER_MODE);
+    DISPLAY_STRING_WITH_UNITS(UNITS_MILLILITERS, 170, 190, (uint8_t *)"mL", CENTER_MODE);
 
     // Bottom Row
     // BSP_LCD_FillRect(0, 180-LINE_OFFSET, 80, LINE_WIDTH); //small vert
@@ -284,24 +276,13 @@ void update_information_screen(char *ingedient_name, units_t unit, char *density
 
     BSP_LCD_DisplayStringAt(80, 110, (uint8_t *)ingedient_name, CENTER_MODE);
 
-    if (unit == UNITS_GRAMS) { BSP_LCD_SetBackColor(LCD_THEME_COLOR3); }
-    BSP_LCD_DisplayStringAt(20, 190, (uint8_t *)"g", CENTER_MODE);
-    if (unit == UNITS_GRAMS) { BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR); }
-
-    if (unit == UNITS_POUNDS) { BSP_LCD_SetBackColor(LCD_THEME_COLOR3); }
-    BSP_LCD_DisplayStringAt(70, 190, (uint8_t *)"lb", CENTER_MODE);
-    if (unit == UNITS_POUNDS) { BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR); }
-
-    if (unit == UNITS_OUNCES) { BSP_LCD_SetBackColor(LCD_THEME_COLOR3); }
-    BSP_LCD_DisplayStringAt(120, 190, (uint8_t *)"oz", CENTER_MODE);
-    if (unit == UNITS_OUNCES) { BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR); }
-
-    if (unit == UNITS_MILLILITERS) { BSP_LCD_SetBackColor(LCD_THEME_COLOR3); }
-    BSP_LCD_DisplayStringAt(170, 190, (uint8_t *)"mL", CENTER_MODE);
-    if (unit == UNITS_MILLILITERS) { BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR); }
+    DISPLAY_STRING_WITH_UNITS(UNITS_GRAMS, 20, 190, (uint8_t *)"g", CENTER_MODE);
+    DISPLAY_STRING_WITH_UNITS(UNITS_POUNDS, 70, 190, (uint8_t *)"lb", CENTER_MODE);
+    DISPLAY_STRING_WITH_UNITS(UNITS_OUNCES, 120, 190, (uint8_t *)"oz", CENTER_MODE);
+    DISPLAY_STRING_WITH_UNITS(UNITS_MILLILITERS, 170, 190, (uint8_t *)"mL", CENTER_MODE);
 
     BSP_LCD_SetFont(&Font20);
-    BSP_LCD_DisplayStringAt(-30, 290, (uint8_t *)density, CENTER_MODE); //sprintf
+    BSP_LCD_DisplayStringAt(-30, 290, (uint8_t *)density, CENTER_MODE);
 }
 
 // Volume Calibration Screen
@@ -335,27 +316,14 @@ void draw_vol_cal_screen(struct VolumeSelection *vol_sel) {
     BSP_LCD_DrawRect(109, 165, 22, 65); // units
     
     // Text
-    if ((vol_sel -> cur_selection) == 0) { BSP_LCD_SetBackColor(LCD_THEME_COLOR3); }
-    BSP_LCD_DisplayStringAt(-45, 190, (uint8_t *)&vol_cal_chars[vol_sel -> char_idx1], CENTER_MODE);
-    if ((vol_sel -> cur_selection) == 0) { BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR); }
-
-    if ((vol_sel -> cur_selection) == 1) { BSP_LCD_SetBackColor(LCD_THEME_COLOR3); }
-    BSP_LCD_DisplayStringAt(-20, 190, (uint8_t *)&vol_cal_chars[vol_sel -> char_idx2], CENTER_MODE);
-    if ((vol_sel -> cur_selection) == 1) { BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR); }
-
-    if ((vol_sel -> cur_selection) == 2) { BSP_LCD_SetBackColor(LCD_THEME_COLOR3); }
-    BSP_LCD_DisplayStringAt(5, 190, (uint8_t *)&vol_cal_chars[vol_sel -> char_idx3], CENTER_MODE);
-    if ((vol_sel -> cur_selection) == 2) { BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR); }
-    
-    if ((vol_sel -> cur_selection) == 3) { BSP_LCD_SetBackColor(LCD_THEME_COLOR3); }
-    BSP_LCD_DisplayStringAt(30, 190, (uint8_t *)&vol_cal_chars[vol_sel -> char_idx4], CENTER_MODE);
-    if ((vol_sel -> cur_selection) == 3) { BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR); }
-
+    DISPLAY_STRING_WITH_SELECTION(0, -45, 190, (uint8_t *)&vol_cal_chars[vol_sel -> char_idx1], CENTER_MODE);
+    DISPLAY_STRING_WITH_SELECTION(1, -20, 190, (uint8_t *)&vol_cal_chars[vol_sel -> char_idx2], CENTER_MODE);
+    DISPLAY_STRING_WITH_SELECTION(2, 5, 190, (uint8_t *)&vol_cal_chars[vol_sel -> char_idx3], CENTER_MODE);
+    DISPLAY_STRING_WITH_SELECTION(3, 30, 190, (uint8_t *)&vol_cal_chars[vol_sel -> char_idx4], CENTER_MODE);
+ 
     BSP_LCD_SetFont(&Font20);
-    if ((vol_sel -> cur_selection) == 4) { BSP_LCD_SetBackColor(LCD_THEME_COLOR3); }
-    BSP_LCD_DisplayStringAt(80, 190, (uint8_t *)&vol_cal_units[(vol_sel -> units) * VOL_CAL_UNITS_LENGTH], CENTER_MODE);
-    if ((vol_sel -> cur_selection) == 4) { BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR); }
-
+    DISPLAY_STRING_WITH_SELECTION(4, 80, 190, (uint8_t *)&vol_cal_units[(vol_sel -> units) * VOL_CAL_UNITS_LENGTH], CENTER_MODE);
+ 
     BSP_LCD_SetFont(&Font20);
     BSP_LCD_DisplayStringAt(15, 100, (uint8_t *)"Enter", CENTER_MODE);
     BSP_LCD_DisplayStringAt(40, 130, (uint8_t *)"Volume", CENTER_MODE);
@@ -366,26 +334,13 @@ void update_vol_cal_screen(struct VolumeSelection *vol_sel) {
     BSP_LCD_SetTextColor(LCD_THEME_PRIMARY_COLOR);
     BSP_LCD_SetFont(&Font24);
 
-    if ((vol_sel -> cur_selection) == 0) { BSP_LCD_SetBackColor(LCD_THEME_COLOR3); }
-    BSP_LCD_DisplayStringAt(-45, 190, (uint8_t *)&vol_cal_chars[vol_sel -> char_idx1], CENTER_MODE);
-    if ((vol_sel -> cur_selection) == 0) { BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR); }
-
-    if ((vol_sel -> cur_selection) == 1) { BSP_LCD_SetBackColor(LCD_THEME_COLOR3); }
-    BSP_LCD_DisplayStringAt(-20, 190, (uint8_t *)&vol_cal_chars[vol_sel -> char_idx2], CENTER_MODE);
-    if ((vol_sel -> cur_selection) == 1) { BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR); }
-
-    if ((vol_sel -> cur_selection) == 2) { BSP_LCD_SetBackColor(LCD_THEME_COLOR3); }
-    BSP_LCD_DisplayStringAt(5, 190, (uint8_t *)&vol_cal_chars[vol_sel -> char_idx3], CENTER_MODE);
-    if ((vol_sel -> cur_selection) == 2) { BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR); }
-
-    if ((vol_sel -> cur_selection) == 3) { BSP_LCD_SetBackColor(LCD_THEME_COLOR3); }
-    BSP_LCD_DisplayStringAt(30, 190, (uint8_t *)&vol_cal_chars[vol_sel -> char_idx4], CENTER_MODE);
-    if ((vol_sel -> cur_selection) == 3) { BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR); }
+    DISPLAY_STRING_WITH_SELECTION(0, -45, 190, (uint8_t *)&vol_cal_chars[vol_sel -> char_idx1], CENTER_MODE);
+    DISPLAY_STRING_WITH_SELECTION(1, -20, 190, (uint8_t *)&vol_cal_chars[vol_sel -> char_idx2], CENTER_MODE);
+    DISPLAY_STRING_WITH_SELECTION(2, 5, 190, (uint8_t *)&vol_cal_chars[vol_sel -> char_idx3], CENTER_MODE);
+    DISPLAY_STRING_WITH_SELECTION(3, 30, 190, (uint8_t *)&vol_cal_chars[vol_sel -> char_idx4], CENTER_MODE);
 
     BSP_LCD_SetFont(&Font20);
-    if ((vol_sel -> cur_selection) == 4) { BSP_LCD_SetBackColor(LCD_THEME_COLOR3); }
-    BSP_LCD_DisplayStringAt(80, 190, (uint8_t *)&vol_cal_units[(vol_sel -> units) * VOL_CAL_UNITS_LENGTH], CENTER_MODE);
-    if ((vol_sel -> cur_selection) == 4) { BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR); }
+    DISPLAY_STRING_WITH_SELECTION(4, 80, 190, (uint8_t *)&vol_cal_units[(vol_sel -> units) * VOL_CAL_UNITS_LENGTH], CENTER_MODE);
 }
 
 
@@ -444,7 +399,7 @@ int true_modulus(int a, int b) {
 void update_volume_selection(struct VolumeSelection *vol_sel, process_id_t process_id) {
     uint8_t *chars = (uint8_t*)vol_sel;
     if (process_id == UP_VOL_CAL_PROCESS_ID) {
-        if (vol_sel -> cur_selection < VOL_CAL_NUM_CHARS) {
+        if (vol_sel -> cur_selection < VOL_CAL_INPUT_BOX_COUNT) {
             chars[vol_sel -> cur_selection] += 2;
             chars[vol_sel -> cur_selection] = chars[vol_sel -> cur_selection] % (VOL_CAL_PERIOD_IDX + 2);
         } else {
@@ -452,7 +407,7 @@ void update_volume_selection(struct VolumeSelection *vol_sel, process_id_t proce
             chars[vol_sel -> cur_selection] = chars[vol_sel -> cur_selection] % VOL_CAL_UNITS_NUM_UNITS;
         }
     } else if (process_id == DOWN_VOL_CAL_PROCESS_ID) {
-        if (vol_sel -> cur_selection < VOL_CAL_NUM_CHARS) {
+        if (vol_sel -> cur_selection < VOL_CAL_INPUT_BOX_COUNT) {
             chars[vol_sel -> cur_selection] = true_modulus(chars[vol_sel -> cur_selection] - 2, VOL_CAL_PERIOD_IDX + 2);
         } else {
             chars[vol_sel -> cur_selection] = true_modulus(chars[vol_sel -> cur_selection] - 1, VOL_CAL_UNITS_NUM_UNITS);
@@ -469,11 +424,11 @@ void update_volume_selection(struct VolumeSelection *vol_sel, process_id_t proce
 // Ex: 31.14 -> 3114
 int32_t convert_vol_cal(struct VolumeSelection *vol_sel) {
     // Check to make sure just 1 period, find position
-    uint8_t period_pos = VOL_CAL_NUM_CHARS;
+    uint8_t period_pos = VOL_CAL_INPUT_BOX_COUNT;
     uint8_t *chars = (uint8_t*)vol_sel;
-    for(uint8_t i = 0; i < VOL_CAL_NUM_CHARS; i++) {
+    for(uint8_t i = 0; i < VOL_CAL_INPUT_BOX_COUNT; i++) {
         if (chars[i] == VOL_CAL_PERIOD_IDX) {
-            if (period_pos != VOL_CAL_NUM_CHARS) { return -1; }
+            if (period_pos != VOL_CAL_INPUT_BOX_COUNT) { return -1; }
             period_pos = i;
         }   
     }
@@ -482,7 +437,7 @@ int32_t convert_vol_cal(struct VolumeSelection *vol_sel) {
     int32_t res = 0;
     int32_t num;
     uint8_t power;
-    for(uint8_t i = 0; i < VOL_CAL_NUM_CHARS; i++) {
+    for(uint8_t i = 0; i < VOL_CAL_INPUT_BOX_COUNT; i++) {
         if (chars[i] != VOL_CAL_PERIOD_IDX) {
             // For all numbers
             num = chars[i] / 2; //Divide by 2 due to array index with \0 bytes
@@ -584,6 +539,3 @@ void process_button(struct Screen **cur_screen, process_id_t process_id) {
         }
     }
 }
-
-// 0 1 2 3
-// 3 2 . 1 0

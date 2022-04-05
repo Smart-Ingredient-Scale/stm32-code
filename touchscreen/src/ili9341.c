@@ -996,11 +996,9 @@ int32_t  ts_cindex[] = TS_CINDEX_3;
 uint16_t tx, ty;
 
 /* Link function for Touchscreen */
-uint8_t  TS_IO_DetectToch(void);
+uint8_t  TS_IO_DetectTouch(void);
 uint16_t TS_IO_GetX(void);
 uint16_t TS_IO_GetY(void);
-uint16_t TS_IO_GetZ1(void);
-uint16_t TS_IO_GetZ2(void);
 
 //-----------------------------------------------------------------------------
 void ili9341_ts_Init(uint16_t DeviceAddr)

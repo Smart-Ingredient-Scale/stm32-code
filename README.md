@@ -14,7 +14,29 @@ modified-project-files/
 
 5 directories, 3 files
 ```
- 
+
+## **Touchscreen TODO**
+- [ ] Display code finalization
+  - [ ] Overwriting with smaller text, make sure background is always erased
+  - [ ] Faster screen switching: "inverse" screen write, same screen but use background color parameter in function for original screen write
+  - [ ] Add home logo
+  - [ ] Add check/confirm logo for volume calibration screen
+- [ ] Code cleanup
+  - [x] Macro in screen.c for updating text color if currently selected
+  - [ ] ifdef guards on .h files
+  - [ ] Move code into a folder
+  - [x] Overview on screen.c and touchscreen.c
+- [ ] Core functionality (prioritize!!)
+  - [ ] Switch to a different timer for touch debounce
+  - [ ] PWM backlight
+  - [ ] Finalize units and update on display
+- [x] "State machine" code
+  - [x] Keep track of state when input volume
+  - [x] Keep track of unit to display on 8-seg
+  - [x] Keep track of current screen shown
+- [ ] Testing
+  - [ ] Add panic error screens for error checking
+
 ## **Branch Summary**
 ```
 $ git branch -a

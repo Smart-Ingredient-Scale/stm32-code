@@ -5,14 +5,39 @@
 #include "stm32f4xx_tim.h"
 #include "misc.h"
 
+#include "clock.h"
 #include "touchscreen.h"
+
+// Usage:
+// Call init_ts() to init peripherals
+// interrupts will occur to fill ts_xpos, ts_ypos, and ts_pressed which
+// can be access in other .c files using the following notation:
+//
+// extern uint16_t ts_xpos;
+// extern uint16_t ts_ypos;
+// extern int      ts_pressed;
+//
+// ts_xpos will be between 0 and X_SIZE
+// ts_ypos will be between 0 and Y_SIZE
+// ts_pressed will be 1 when there is a new touch event =
+//   (acts as a flag signaling that info needs to be processsed)
+
+
+
 
 uint16_t ts_xpos;
 uint16_t ts_ypos;
 int      ts_pressed = 0;
 
 
-int isBetween(uint16_t val, uint16_t low, uint16_t high) {
+// Internal Functions
+static void setup_debounce_timer();
+static void enable_debounce_timer();
+static void init_ts_interrupt();
+static void ts_config_pin_ts();
+
+
+static int isBetween(uint16_t val, uint16_t low, uint16_t high) {
     if (val >= low && val <= high) {
         return 1;
     } else {
@@ -29,22 +54,14 @@ int inBox(uint16_t x, uint16_t y, uint16_t x_low, uint16_t y_low, uint16_t x_hig
 
 
 // Touch screen press (debounced)
-// Triggered on down-presses and up-presses, using "~TS_YP_IDR" to filter only down-presses
+// Triggered on down-presses and up-presses, using "!TS_YP_IDR" to filter only down-presses
 void EXTI0_IRQHandler(void)
 {
-    if(EXTI_GetITStatus(EXTI_Line0) == SET && ~TS_YP_IDR)
+    if(EXTI_GetITStatus(EXTI_Line0) == SET && !TS_YP_IDR)
     {
-//        if (status) {
-//            ili9341_FillRect(0, 0, 100, 100, 0xff00);
-//            status = 0;
-//        } else {
-//            ili9341_FillRect(0, 0, 100, 100, 0xffff);
-//            status = 1;
-//        }
         ts_xpos = TS_IO_GetX();
         ts_ypos = TS_IO_GetY();
         ts_pressed = 1;
-
 
         ts_config_pin_ts(); //put pins back in ts formation
 
@@ -79,7 +96,7 @@ void TIM4_IRQHandler(void)
     EXTI_Init(&EXTI_InitStruct);
 }
 
-void setup_debounce_timer()
+static void setup_debounce_timer()
 {
     RCC -> APB1ENR |= RCC_APB1ENR_TIM4EN; //enable clock
 
@@ -94,16 +111,15 @@ void setup_debounce_timer()
     NVIC -> ISER[0] |= 1<<TIM4_IRQn; //enable the interrupt to be accepted by NVIC ISER
 }
 
-void enable_debounce_timer()
+static void enable_debounce_timer()
 {
     TIM4 -> CR1 |= TIM_CR1_CEN; // enable
 }
 
 
-void init_ts_interrupt()
+static void init_ts_interrupt()
 {
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
-
 
     // Select the input source pin for the EXTI line
     SYSCFG_EXTILineConfig(TS_YP_EXTI_PORT, TS_YP_EXTI_PIN);
@@ -125,15 +141,8 @@ void init_ts_interrupt()
     NVIC_Init(&NVIC_InitStructure);
 }
 
-void ts_config_pin_ts()
+static void ts_config_pin_ts()
 {
-    // GPIO_InitTypeDef   GPIO_InitStructure;
-
-    // GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-    // GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-    // GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
-    // GPIO_Init(GPIOB, &GPIO_InitStructure);
-
     TS_YP_MODE_INPUT; /* YP = D_INPUT */
     TS_YM_MODE_INPUT; /* YM = D_INPUT */
     TS_XP_MODE_OUTPUT;
@@ -225,7 +234,6 @@ uint8_t TS_IO_DetectTouch(void)
     // GPIOX_PUPDR(MODE_PU_UP, TS_YP);
 
     micro_wait(100);
-    // LCD_IO_Delay(TS_AD_DELAY);
 
     if (TS_YP_IDR) {
         ret = 0; /* Touchscreen is not touch */

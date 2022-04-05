@@ -10,14 +10,6 @@
 #define RST_ACTIVE GPIOC -> BSRR |= GPIO_BSRR_BR_7     // Set PC7 low
 #define RST_IDLE   GPIOC -> BSRR |= GPIO_BSRR_BS_7     // Set PC7 high
 
-// #define CD_COMMAND GPIOC -> BSRRH |= GPIO_BSRR_BS_6     // Set PC6 low
-// #define CD_DATA    GPIOC -> BSRRL |= GPIO_BSRR_BS_6     // Set PC6 high
-// #define CS_ACTIVE  GPIOB -> BSRRH |= GPIO_BSRR_BS_12    // Set PB12 low
-// #define CS_IDLE    GPIOB -> BSRRL |= GPIO_BSRR_BS_12    // Set PB12 high
-// #define RST_ACTIVE GPIOC -> BSRRH |= GPIO_BSRR_BS_7     // Set PC7 low
-// #define RST_IDLE   GPIOC -> BSRRL |= GPIO_BSRR_BS_7     // Set PC7 high
-
-
 void  LCD_Delay (uint32_t delay);
 void  LCD_IO_Init(void);
 void  LCD_IO_Bl_OnOff(uint8_t Bl); // TODO: backlight
