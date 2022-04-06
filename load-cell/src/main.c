@@ -38,6 +38,6 @@ int main(void) {
 
     for(;;) {
         int32_t converted = convert(adc.movingAverage);
-        ss_display_num(adc.movingAverage);
+        ss_display_num(converted);
     }
 }
