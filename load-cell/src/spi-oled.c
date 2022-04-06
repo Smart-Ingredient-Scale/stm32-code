@@ -78,12 +78,12 @@ static void send_data_bb(uint8_t data) {
 /* Initialize the OLED via bit-banging */
 void init_oled_bb(void) {
 	send_cmd_bb(0x38); // Function Set: English/Japanese font, 8 bit data packets
-    micro_wait(2000); /* delay 2ms according to datasheet */
+    micro_wait(20000); /* delay 2ms according to datasheet */
 
     send_cmd_bb(0x08); // Display OFF, no cursor
 	send_cmd_bb(0x01); // Display Clear: clears all characters from DDRAM, &DDRAM = 0x0
 	
-    micro_wait(5000); /* delay 5ms */
+    micro_wait(50000); /* delay 5ms */
 	
     send_cmd_bb(0x06); // Entry Mode Set: increment DDRAM address upon write to DDRAM
 	send_cmd_bb(0x02); // Home Command: reset DDRAM to 0x0 and blank screen
