@@ -1,20 +1,5 @@
 <h1 style="color: salmon"> <b>Touchscreen</b>: STM32 Embedded C Code Repo </h1>
 
-## **DONE**: Merge the `modified` project files into each new branch:
-```
-modified-project-files/
-├── CMSIS
-│   └── device
-│       └── stm32f4xx.h      # Replaced the BSRR in GPIO_TypeDef
-├── src
-│   └── system_stm32f4xx.c   # Removed confusing empty braces (warning)
-└── StdPeriph_Driver
-    └── src
-        ├── stm32f4xx_gpio.c # Updated the BSRRL and BSRRH references
-
-5 directories, 3 files
-```
-
 ## **Touchscreen TODO**
 - [ ] Display code finalization
   - [ ] Overwriting with smaller text, make sure background is always erased
@@ -36,6 +21,22 @@ modified-project-files/
   - [x] Keep track of current screen shown
 - [ ] Testing
   - [ ] Add panic error screens for error checking
+
+## **DONE**: Merge the `modified` project files into each new branch:
+```
+modified-project-files/
+├── CMSIS
+│   └── device
+│       └── stm32f4xx.h      # Replaced the BSRR in GPIO_TypeDef
+├── src
+│   └── system_stm32f4xx.c   # Removed confusing empty braces (warning)
+└── StdPeriph_Driver
+    └── src
+        ├── stm32f4xx_gpio.c # Updated the BSRRL and BSRRH references
+
+5 directories, 3 files
+```
+
 
 ## **Branch Summary**
 ```
