@@ -55,6 +55,7 @@ int inBox(uint16_t x, uint16_t y, uint16_t x_low, uint16_t y_low, uint16_t x_hig
 
 // Touch screen press (debounced)
 // Triggered on down-presses and up-presses, using "!TS_YP_IDR" to filter only down-presses
+/*
 void EXTI0_IRQHandler(void)
 {
     if(EXTI_GetITStatus(EXTI_Line0) == SET && !TS_YP_IDR)
@@ -75,7 +76,7 @@ void EXTI0_IRQHandler(void)
 
         enable_debounce_timer();
 
-        /* Clear the EXTI line 0 pending bit */
+        // Clear the EXTI line 0 pending bit
         EXTI_ClearITPendingBit(EXTI_Line0);
     }
 }
@@ -95,6 +96,7 @@ void TIM4_IRQHandler(void)
     EXTI_InitStruct.EXTI_LineCmd = ENABLE;
     EXTI_Init(&EXTI_InitStruct);
 }
+*/
 
 static void setup_debounce_timer()
 {
