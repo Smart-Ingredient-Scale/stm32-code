@@ -55,7 +55,6 @@ int inBox(uint16_t x, uint16_t y, uint16_t x_low, uint16_t y_low, uint16_t x_hig
 
 // Touch screen press (debounced)
 // Triggered on down-presses and up-presses, using "!TS_YP_IDR" to filter only down-presses
-/*
 void EXTI0_IRQHandler(void)
 {
     if(EXTI_GetITStatus(EXTI_Line0) == SET && !TS_YP_IDR)
@@ -83,10 +82,10 @@ void EXTI0_IRQHandler(void)
 
 
 // Debounce timer, re-enables the interrupt for detecting a touch
-void TIM4_IRQHandler(void)
+void TIM3_IRQHandler(void)
 {
-    TIM4 -> SR &= ~TIM_SR_UIF; //Acknowledge
-    TIM4 -> CR1 &= ~TIM_CR1_CEN; // disable
+    TIM3 -> SR &= ~TIM_SR_UIF; //Acknowledge
+    TIM3 -> CR1 &= ~TIM_CR1_CEN; // disable
 
     // // Re_enable EXTI
     EXTI_InitTypeDef EXTI_InitStruct;
@@ -96,26 +95,26 @@ void TIM4_IRQHandler(void)
     EXTI_InitStruct.EXTI_LineCmd = ENABLE;
     EXTI_Init(&EXTI_InitStruct);
 }
-*/
+
 
 static void setup_debounce_timer()
 {
-    RCC -> APB1ENR |= RCC_APB1ENR_TIM4EN; //enable clock
+    RCC -> APB1ENR |= RCC_APB1ENR_TIM3EN; //enable clock
 
-    TIM4 -> CR1 &= ~TIM_CR1_CEN; // make sure timer is disabled
+    TIM3 -> CR1 &= ~TIM_CR1_CEN; // make sure timer is disabled
 
-    TIM4 -> PSC = 1600-1;
-    TIM4 -> ARR = 6000-1; //12000 - 0.4s
+    TIM3 -> PSC = 1600-1;
+    TIM3 -> ARR = 6000-1; //12000 - 0.4s
 
-    TIM4 -> DIER |= TIM_DIER_UIE; //enable interrupt on update
-    TIM4 -> CR1 &= ~TIM_CR1_CEN; // disable timer
+    TIM3 -> DIER |= TIM_DIER_UIE; //enable interrupt on update
+    TIM3 -> CR1 &= ~TIM_CR1_CEN; // disable timer
 
-    NVIC -> ISER[0] |= 1<<TIM4_IRQn; //enable the interrupt to be accepted by NVIC ISER
+    NVIC -> ISER[0] |= 1<<TIM3_IRQn; //enable the interrupt to be accepted by NVIC ISER
 }
 
 static void enable_debounce_timer()
 {
-    TIM4 -> CR1 |= TIM_CR1_CEN; // enable
+    TIM3 -> CR1 |= TIM_CR1_CEN; // enable
 }
 
 

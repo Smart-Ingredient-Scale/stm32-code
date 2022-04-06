@@ -240,31 +240,31 @@ int32_t convert(int32_t x)
 void init_button()
 {
     RCC -> AHB1ENR |= RCC_AHB1ENR_GPIOCEN; //enable port C
-    GPIOC->MODER &= ~GPIO_MODER_MODER0; // Set PC0 to input
-    GPIOC->PUPDR &= ~GPIO_PUPDR_PUPDR0;
-    GPIOC->PUPDR |= GPIO_PUPDR_PUPDR0_1; // Set PC0 to pull down
+    GPIOC->MODER &= ~GPIO_MODER_MODER3; // Set PC3 to input
+    GPIOC->PUPDR &= ~GPIO_PUPDR_PUPDR3;
+    GPIOC->PUPDR |= GPIO_PUPDR_PUPDR3_1; // Set PC3 to pull down
 }
 
 // Touch screen press (debounced)
-void EXTI0_IRQHandler(void)
+void EXTI3_IRQHandler(void)
 {
-    if(EXTI_GetITStatus(EXTI_Line0) == SET)
+    if(EXTI_GetITStatus(EXTI_Line3) == SET)
     {
         // Disable EXTI line until debounce
         EXTI_InitTypeDef EXTI_InitStruct;
-        EXTI_InitStruct.EXTI_Line = EXTI_Line0;
+        EXTI_InitStruct.EXTI_Line = EXTI_Line3;
         EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
         EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
         EXTI_InitStruct.EXTI_LineCmd = DISABLE;
         EXTI_Init(&EXTI_InitStruct);
 
-        /* Clear the EXTI line 0 pending bit */
-        EXTI_ClearITPendingBit(EXTI_Line0);
+        /* Clear the EXTI line 3 pending bit */
+        EXTI_ClearITPendingBit(EXTI_Line3);
 
         zeroADCVal = adc.movingAverage;
         micro_wait(500);
 
-        EXTI_InitStruct.EXTI_Line = EXTI_Line0;
+        EXTI_InitStruct.EXTI_Line = EXTI_Line3;
         EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
         EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
         EXTI_InitStruct.EXTI_LineCmd = ENABLE;
@@ -277,11 +277,11 @@ void init_button_interrupt()
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
     // Select the input source pin for the EXTI line
-    SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOC, EXTI_PinSource0);
+    SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOC, EXTI_PinSource3);
 
     // Select the mode(interrupt, event) and configure the trigger selection (Rising, falling or both)
     EXTI_InitTypeDef EXTI_InitStruct;
-    EXTI_InitStruct.EXTI_Line = EXTI_Line0;
+    EXTI_InitStruct.EXTI_Line = EXTI_Line3;
     EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
     EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
     EXTI_InitStruct.EXTI_LineCmd = ENABLE;
@@ -289,7 +289,7 @@ void init_button_interrupt()
 
     // Configure NVIC IRQ channel mapped to the EXTI line
     NVIC_InitTypeDef   NVIC_InitStructure;
-    NVIC_InitStructure.NVIC_IRQChannel = EXTI0_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannel = EXTI3_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x0F;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x0F;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;

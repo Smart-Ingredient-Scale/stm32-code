@@ -62,7 +62,7 @@ int main(void)
 
     // Ben's code
     BSP_LCD_Init();
-    //init_ts();
+    init_ts();
 
     struct Screen *cur_screen = &home_screen;
     draw_home_screen("test10", "test2", "test3");
@@ -72,7 +72,7 @@ int main(void)
     uint16_t y_pos;
 
     while(1) {
-        /*
+
         // Event processing
         if(ts_pressed) {
             x_pos = ts_xpos;
@@ -98,7 +98,7 @@ int main(void)
                 }
             }
         }
-*/
+
         // Display the current load in g
         int32_t converted = convert(adc.movingAverage);
         ss_display_num(converted);
