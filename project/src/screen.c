@@ -235,7 +235,7 @@ void update_home_screen(char *item1, char *item2, char *item3) {
 }
 
 // Item Information Screen
-void draw_information_screen(char *ingedient_name, units_t unit, char *density) {
+void draw_information_screen(char *ingedient_name, char *density) {
     BSP_LCD_Clear(LCD_THEME_SECONDARY_COLOR);
     BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR);
     BSP_LCD_SetTextColor(LCD_THEME_PRIMARY_COLOR);
@@ -269,7 +269,7 @@ void draw_information_screen(char *ingedient_name, units_t unit, char *density) 
     BSP_LCD_DisplayStringAt(130, 275, (uint8_t *)"Calibrate", CENTER_MODE);
 }
 
-void update_information_screen(char *ingedient_name, units_t unit, char *density) {
+void update_information_screen(char *ingedient_name, char *density) {
     BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR);
     BSP_LCD_SetTextColor(LCD_THEME_PRIMARY_COLOR);
     BSP_LCD_SetFont(&Font24);
@@ -473,7 +473,7 @@ void process_button(struct Screen **cur_screen, process_id_t process_id) {
             (process_id == ITEM3_HOME_PROCESS_ID) ) {
             // Switch screen
             (*cur_screen) = &information_screen;
-            draw_information_screen("test", UNITS_GRAMS, "density");
+            draw_information_screen("test", "density");
         } else if (process_id == UP_HOME_PROCESS_ID) {
             update_home_screen("up", "screen", "used");
         } else if (process_id == DOWN_HOME_PROCESS_ID) {
@@ -487,16 +487,16 @@ void process_button(struct Screen **cur_screen, process_id_t process_id) {
             draw_home_screen("test1", "test2", "test3");          
         } else if (process_id == UNIT1_ITEM_PROCESS_ID) {
             cur_display_unit = UNITS_GRAMS;
-            update_information_screen("test", UNITS_GRAMS, "density");
+            update_information_screen("test", "density");
         } else if (process_id == UNIT2_ITEM_PROCESS_ID) {
             cur_display_unit = UNITS_POUNDS;
-            update_information_screen("test", UNITS_POUNDS, "density");
+            update_information_screen("test", "density");
         } else if (process_id == UNIT3_ITEM_PROCESS_ID) {
             cur_display_unit = UNITS_OUNCES;
-            update_information_screen("test", UNITS_OUNCES, "density");
+            update_information_screen("test", "density");
         } else if (process_id == UNIT4_ITEM_PROCESS_ID) {
             cur_display_unit = UNITS_MILLILITERS;
-            update_information_screen("test", UNITS_MILLILITERS, "density");
+            update_information_screen("test", "density");
         } else if (process_id == CALIBRATE_ITEM_PROCESS_ID) {
             volume_selection = (struct VolumeSelection){0}; // Reset volume_selection
 
@@ -535,7 +535,7 @@ void process_button(struct Screen **cur_screen, process_id_t process_id) {
         } else if (process_id == SUBMIT_MASS_CAL_PROCESS_ID) {
             // Switch Screen
             (*cur_screen) = &information_screen;
-            draw_information_screen("test", UNITS_MILLILITERS, "density");
+            draw_information_screen("test", "density");
         }
     }
 }

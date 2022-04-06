@@ -26,7 +26,7 @@
 }
 
 #define DISPLAY_STRING_WITH_SELECTION(_cur_sel, _x, _y, _text, _mode) DISPLAY_STRING_WITH_HIGHLIGHT((vol_sel -> cur_selection) == _cur_sel, _x, _y, _text, _mode)
-#define DISPLAY_STRING_WITH_UNITS(_units, _x, _y, _text, _mode) DISPLAY_STRING_WITH_HIGHLIGHT(unit == _units, _x, _y, _text, _mode)
+#define DISPLAY_STRING_WITH_UNITS(_units, _x, _y, _text, _mode) DISPLAY_STRING_WITH_HIGHLIGHT(cur_display_unit == _units, _x, _y, _text, _mode)
 
 
 struct Button
@@ -151,8 +151,8 @@ struct VolumeSelection
 void draw_home_screen(char *item1, char *item2, char *item3);
 void update_home_screen(char *item1, char *item2, char *item3);
 
-void draw_information_screen(char *ingedient_name, units_t unit, char *density);
-void update_information_screen(char *ingedient_name, units_t unit, char *density);
+void draw_information_screen(char *ingedient_name, char *density);
+void update_information_screen(char *ingedient_name, char *density);
 
 void draw_vol_cal_screen(struct VolumeSelection *vol_sel);
 void update_vol_cal_screen(struct VolumeSelection *vol_sel);
