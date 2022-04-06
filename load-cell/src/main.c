@@ -23,21 +23,13 @@ extern HX711_Data_t adc;                /* contains samples and moving average! 
 #define ONE_MILLION 1000000
 
 int main(void) {
-    /* configure the SPI OLED GPIO pins:
-     * PC10 --> SCK  --> OLED pin 12,
-     * PC11 --> NSS  --> OLED pin 16,
-     * PC12 --> MOSI --> OLED pin 14 */
-    //config_oled_gpio_bb();
-
     // Seven-seg display initialzation
     setup_spi1();
     off_display();
     init_display();
 
-
     init_button();
     init_button_interrupt();
-
 
     load_cell_init(HZ10, CHA_128_GAIN); /* configure TIM4 CH4 and other peripherals */
 
@@ -46,8 +38,6 @@ int main(void) {
 
     for(;;) {
         int32_t converted = convert(adc.movingAverage);
-        //sprintf(line2, "%+ld", converted);
-        //print_oled_bb("ADC Average:", line2);
-        ss_display_num(converted);
+        ss_display_num(adc.movingAverage);
     }
 }
