@@ -23,6 +23,12 @@
 
 #include "screen.h"
 
+#include "clock.h"
+#include "gpio.h"
+#include "load-cell.h"
+#include <stdio.h>
+#include "spi-ss.h"
+
 // touchscreen.c
 extern uint16_t ts_xpos;
 extern uint16_t ts_ypos;
@@ -33,11 +39,28 @@ extern struct Screen home_screen;
 extern struct Screen information_screen;
 extern struct Screen vol_cal_screen;
 extern struct Screen mass_cal_screen;
+extern HX711_Data_t adc;                /* contains samples and moving average! */
+
+#define ONE_MILLION 1000000
 
 
 int main(void)
 {
-   
+    // Seven-seg display initialzation
+    setup_spi1();
+    off_display();
+    init_display();
+
+    init_button();
+    init_button_interrupt();
+
+    load_cell_init(HZ10, CHA_128_GAIN); /* configure TIM4 CH4 and other peripherals */
+
+    /* actually activate the load cell sampling timer */
+    load_cell_enable();
+
+
+    // Ben's code
     BSP_LCD_Init();
     init_ts();
 
@@ -75,6 +98,9 @@ int main(void)
                 }
             }
 
+        // Display the current load in g
+        int32_t converted = convert(adc.movingAverage);
+        ss_display_num(converted);
 
         }
     }

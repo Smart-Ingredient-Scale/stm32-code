@@ -44,8 +44,8 @@ $ git branch -a
   eeprom
   example0
   load-cell
-  master
-* touchscreen
+*  master
+ touchscreen
 
 ```
 
