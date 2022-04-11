@@ -36,9 +36,9 @@ extern int      ts_pressed;
 
 // screen.c
 extern struct Screen home_screen;
-extern struct Screen information_screen;
-extern struct Screen vol_cal_screen;
-extern struct Screen mass_cal_screen;
+//extern struct Screen information_screen;
+//extern struct Screen vol_cal_screen;
+//extern struct Screen mass_cal_screen;
 extern HX711_Data_t adc;                /* contains samples and moving average! */
 
 #define ONE_MILLION 1000000
@@ -46,10 +46,13 @@ extern HX711_Data_t adc;                /* contains samples and moving average! 
 
 int main(void)
 {
-    // Seven-seg display initialzation
+    micro_wait(1000000);
+    // Seven-seg display initialization
+
     setup_spi1();
     off_display();
     init_display();
+    ss_display_num(-777777);
 
     init_button();
     init_button_interrupt();
@@ -70,6 +73,9 @@ int main(void)
 
     uint16_t x_pos;
     uint16_t y_pos;
+
+    int cnt = 0;
+    int num = 12345;
 
     while(1) {
 
@@ -93,16 +99,15 @@ int main(void)
                     // sprintf(str, "%d", cur_button.process_id);
                     // BSP_LCD_DisplayStringAt(42, 270, (uint8_t *)str, CENTER_MODE);
                     process_button(&cur_screen, cur_button.process_id);
-            
+
                     break;
                 }
             }
         }
 
-        // Display the current load in g
-        int32_t converted = convert(adc.movingAverage);
+      // Display the current load in g
+      int32_t converted = convert(adc.movingAverage);
         ss_display_num(converted);
-
 
     }
 

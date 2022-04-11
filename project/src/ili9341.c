@@ -401,10 +401,10 @@ void ili9341_Init(void)
   LCD_IO_WriteCmd8(ILI9341_SLPOUT);    // Exit Sleep
   LCD_Delay(10);
 
-  #if ILI9341_INITCLEAR == 1
-  ili9341_FillRect(0, 0, ILI9341_SIZE_X, ILI9341_SIZE_Y, 0x0000);
-  LCD_Delay(10);
-  #endif
+//  #if ILI9341_INITCLEAR == 1
+//  ili9341_FillRect(0, 0, ILI9341_SIZE_X, ILI9341_SIZE_Y, 0x0000);
+//  LCD_Delay(10);
+//  #endif
   
   LCD_IO_WriteCmd8(ILI9341_DISPON);    // Display on
   LCD_Delay(10);

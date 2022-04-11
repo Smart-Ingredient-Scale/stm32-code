@@ -51,8 +51,8 @@ static void setup_spi2() {
    GPIOB -> AFR[1] |= (0x5 << 28);
 
    // Configure SPI2
-//    SPI2 -> CR1 |= SPI_CR1_BR; // Set baud rate as low as possible (x MHz / 256)
-   SPI2 -> CR1 &= ~SPI_CR1_BR; //set at fast as possible
+   SPI2 -> CR1 |= SPI_CR1_BR; // Set baud rate as low as possible (x MHz / 256)
+   //SPI2 -> CR1 &= ~SPI_CR1_BR; //set at fast as possible
 
    // default set for 8 bit word size
    SPI2 -> CR1 |= SPI_CR1_MSTR; // Configure to be in master mode
@@ -64,11 +64,13 @@ static void setup_spi2() {
 static void spi_send8(uint8_t n) {
    while ((SPI2 -> SR & SPI_SR_TXE) == 0); //Wait until the SPI2_SR_TXE bit is set
    SPI2 -> DR = n;
+   micro_wait(150);
 }
 
 static void spi_send16(uint16_t n) {
    while ((SPI2 -> SR & SPI_SR_TXE) == 0); //Wait until the SPI2_SR_TXE bit is set
    SPI2 -> DR = n;
+   micro_wait(150);
 }
 
 

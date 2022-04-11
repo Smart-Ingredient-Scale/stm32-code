@@ -20,7 +20,7 @@ static inline void enable_sdclk_pwm(void);
 static inline uint32_t hx711_data_bit(void);
 static inline enum HX711DataStatus_t hx711_data_ready(void);
 
-int32_t zeroADCVal = -64600;
+int32_t zeroADCVal = -1240;
 
 /* Set PB9 for AF = 2 (TIM_CH4 output pin) since it will operate as
  * the clock used for getting data from the HX711 IC */

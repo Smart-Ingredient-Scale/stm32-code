@@ -49,7 +49,7 @@ void off_display(){
 
 void init_display(){
     spi_send(0xF00);   // Normal operation mode
-    spi_send(0x0A0F);  // Set Intensity to 31/32
+    spi_send(0x0A04);  // Set Intensity to 31/32
     spi_send(0x0B07);  // Display digits 0 1 2 3 4 5 6 7
     spi_send(0x9FF);   // Decode mode for digits 0-7
     spi_send(0xC01);   // Turn it on
