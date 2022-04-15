@@ -60,12 +60,20 @@ int main(void)
     load_cell_enable();
 
 
-    // Ben's code
-    BSP_LCD_Init();
-    init_ts();
+    // Touchscreen Initialization
+    LCD_PWM_GPIO_Init();
+    LCD_PWM_TIM_Init();
+    LCD_PWM_Init(1); // Turn off backlight while loading inital screen
+
+    BSP_LCD_Init(); // LCD Display Init
+    init_ts(); // Touchscreen press Init
 
     struct Screen *cur_screen = &home_screen;
     draw_home_screen("test10", "test2", "test3");
+
+    LCD_PWM_Init(50); // Turn on screen
+
+
 
 
     uint16_t x_pos;
@@ -93,7 +101,7 @@ int main(void)
                     // sprintf(str, "%d", cur_button.process_id);
                     // BSP_LCD_DisplayStringAt(42, 270, (uint8_t *)str, CENTER_MODE);
                     process_button(&cur_screen, cur_button.process_id);
-            
+
                     break;
                 }
             }

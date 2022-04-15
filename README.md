@@ -4,16 +4,18 @@
 - [ ] Display code finalization
   - [ ] Overwriting with smaller text, make sure background is always erased
   - [ ] Faster screen switching: "inverse" screen write, same screen but use background color parameter in function for original screen write
+  - [ ] On screen switch: try turning off the backlight
   - [ ] Add home logo
   - [ ] Add check/confirm logo for volume calibration screen
+  - [ ] Have a sleep timer that dims the backlight if no interaction has been recorded in a while
 - [ ] Code cleanup
   - [x] Macro in screen.c for updating text color if currently selected
   - [ ] ifdef guards on .h files
-  - [ ] Move code into a folder
+  - [ ] Move LCD code into a folder
   - [x] Overview on screen.c and touchscreen.c
 - [ ] Core functionality (prioritize!!)
-  - [ ] Switch to a different timer for touch debounce
-  - [ ] PWM backlight
+  - [x] Switch to a different timer for touch debounce
+  - [x] PWM backlight
   - [ ] Finalize units and update on display
 - [x] "State machine" code
   - [x] Keep track of state when input volume

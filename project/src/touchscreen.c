@@ -82,10 +82,10 @@ void EXTI0_IRQHandler(void)
 
 
 // Debounce timer, re-enables the interrupt for detecting a touch
-void TIM3_IRQHandler(void)
+void TIM2_IRQHandler(void)
 {
-    TIM3 -> SR &= ~TIM_SR_UIF; //Acknowledge
-    TIM3 -> CR1 &= ~TIM_CR1_CEN; // disable
+    TIM2 -> SR &= ~TIM_SR_UIF; //Acknowledge
+    TIM2 -> CR1 &= ~TIM_CR1_CEN; // disable
 
     // // Re_enable EXTI
     EXTI_InitTypeDef EXTI_InitStruct;
@@ -99,22 +99,22 @@ void TIM3_IRQHandler(void)
 
 static void setup_debounce_timer()
 {
-    RCC -> APB1ENR |= RCC_APB1ENR_TIM3EN; //enable clock
+    RCC -> APB1ENR |= RCC_APB1ENR_TIM2EN; //enable clock
 
-    TIM3 -> CR1 &= ~TIM_CR1_CEN; // make sure timer is disabled
+    TIM2 -> CR1 &= ~TIM_CR1_CEN; // make sure timer is disabled
 
-    TIM3 -> PSC = 1600-1;
-    TIM3 -> ARR = 6000-1; //12000 - 0.4s
+    TIM2 -> PSC = 1600-1;
+    TIM2 -> ARR = 6000-1; //12000 - 0.4s
 
-    TIM3 -> DIER |= TIM_DIER_UIE; //enable interrupt on update
-    TIM3 -> CR1 &= ~TIM_CR1_CEN; // disable timer
+    TIM2 -> DIER |= TIM_DIER_UIE; //enable interrupt on update
+    TIM2 -> CR1 &= ~TIM_CR1_CEN; // disable timer
 
-    NVIC -> ISER[0] |= 1<<TIM3_IRQn; //enable the interrupt to be accepted by NVIC ISER
+    NVIC -> ISER[0] |= 1<<TIM2_IRQn; //enable the interrupt to be accepted by NVIC ISER
 }
 
 static void enable_debounce_timer()
 {
-    TIM3 -> CR1 |= TIM_CR1_CEN; // enable
+    TIM2 -> CR1 |= TIM_CR1_CEN; // enable
 }
 
 
