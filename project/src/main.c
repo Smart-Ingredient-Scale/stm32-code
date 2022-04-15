@@ -8,25 +8,22 @@
  ******************************************************************************
 */
 
+#include <stdio.h>
 
 #include "stm32f4xx.h"
-
-#include "stm32_adafruit_lcd.h"
-#include "ili9341.h"
-#include "lcd_io_spi.h"
-
 #include "stm32f4xx_adc.h"
 #include "stm32f4xx_gpio.h"
 #include "stm32f4xx_exti.h"
 #include "stm32f4xx_tim.h"
+
+#include "stm32_adafruit_lcd.h"
+#include "ili9341.h"
+#include "lcd_io_spi.h"
 #include "touchscreen.h"
-
 #include "screen.h"
-
 #include "clock.h"
 #include "gpio.h"
 #include "load-cell.h"
-#include <stdio.h>
 #include "spi-ss.h"
 
 // touchscreen.c
@@ -50,12 +47,15 @@ int main(void)
     setup_spi1();
     off_display();
     init_display();
+    ss_display_num(7777777); // display 7777777 for initialization phase
 
+
+    // TARE (zero) button initialization on PC0
     init_button();
     init_button_interrupt();
 
+    // load cell initialization
     load_cell_init(HZ10, CHA_128_GAIN); /* configure TIM4 CH4 and other peripherals */
-
     /* actually activate the load cell sampling timer */
     load_cell_enable();
 
@@ -72,10 +72,6 @@ int main(void)
     draw_home_screen("test10", "test2", "test3");
 
     LCD_PWM_Init(50); // Turn on screen
-
-
-
-
     uint16_t x_pos;
     uint16_t y_pos;
 
@@ -110,7 +106,6 @@ int main(void)
         // Display the current load in g
         int32_t converted = convert(adc.movingAverage);
         ss_display_num(converted);
-
 
     }
 

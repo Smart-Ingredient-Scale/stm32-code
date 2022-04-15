@@ -4,6 +4,7 @@
 #include "load-cell.h"
 #include "clock.h"
 #include "gpio.h"
+#include "screen.h"
 
 /* HX711 FSM state flags / values */
 static enum HX711ChanConfig_t clks_per_sample = CHA_64_GAIN; /* doesn't change */
@@ -21,6 +22,7 @@ static inline uint32_t hx711_data_bit(void);
 static inline enum HX711DataStatus_t hx711_data_ready(void);
 
 int32_t zeroADCVal = -64600;
+extern units_t cur_display_unit;
 
 /* Set PB9 for AF = 2 (TIM_CH4 output pin) since it will operate as
  * the clock used for getting data from the HX711 IC */
@@ -230,10 +232,28 @@ static void update_sample(uint32_t newSampleBits) {
     adc.movingAverage = adc.cumulativeSum >> NUM_STORED_SAMPLES_BITSHIFT;
 }
 
+uint32_t cur_density = 1;
+
+// This function converts the int32_t ADC value from the HX711 to grams/ounces/etc. using arthmetic
 int32_t convert(int32_t x)
 {
+    // zeroADCVal is a global variable and is set every time the TARE (zero) button is pressed
     x -= zeroADCVal;
-    x = x * 1000 / 11200;
+    x = x * 1000 / 11200; // conversion factor from ADC value to grams (default)
+
+    if(cur_display_unit == UNITS_OUNCES)
+    {
+        x = x * 100 / 2835; // converts from g to oz - divide by 28.35
+    }
+    else if(cur_display_unit == UNITS_OUNCES)
+    {
+        x = x / 454; // converts from g to oz - divide by 454
+    }
+    else if(cur_display_unit == UNITS_MILLILITERS)
+    {
+        x = x / cur_density; // ml = grams / density
+    }
+
     return x;
 }
 
