@@ -1,7 +1,7 @@
 <h1 style="color: salmon"> <b>Touchscreen</b>: STM32 Embedded C Code Repo </h1>
 
 ## **Touchscreen TODO**
-  - [ ] Display code finalization
+- [ ] Display code finalization
   - [x] Overwriting with smaller text, make sure background is always erased
   - [ ] Faster screen switching: "inverse" screen write, same screen but use background color parameter in function for original screen write
   - [ ] On screen switch: try turning off the backlight
