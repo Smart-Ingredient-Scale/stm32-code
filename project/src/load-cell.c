@@ -245,9 +245,9 @@ int32_t convert(int32_t x)
     {
         x = x * 100 / 2835; // converts from g to oz - divide by 28.35
     }
-    else if(cur_display_unit == UNITS_OUNCES)
+    else if(cur_display_unit == UNITS_POUNDS)
     {
-        x = x / 454; // converts from g to oz - divide by 454
+        x = x / 454; // converts from g to lb - divide by 454
     }
     else if(cur_display_unit == UNITS_MILLILITERS)
     {
