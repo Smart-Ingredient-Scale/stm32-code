@@ -25,6 +25,7 @@
 #include "gpio.h"
 #include "load-cell.h"
 #include "spi-ss.h"
+#include "lcd_pwm.h"
 
 // touchscreen.c
 extern uint16_t ts_xpos;
@@ -69,7 +70,7 @@ int main(void)
     init_ts(); // Touchscreen press Init
 
     struct Screen *cur_screen = &home_screen;
-    draw_home_screen("test10", "test2", "test3");
+    draw_home_screen("test 1", "test 2", "test3");
 
     LCD_PWM_Init(50); // Turn on screen
     uint16_t x_pos;

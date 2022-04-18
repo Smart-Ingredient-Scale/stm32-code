@@ -86,6 +86,7 @@ EndDependencies */
 #include "lcd.h"
 #include "stm32_adafruit_lcd.h"
 #include "fonts.h"
+#include <string.h>
 
 /* @defgroup STM32_ADAFRUIT_LCD_Private_Defines */
 #define POLY_X(Z)             ((int32_t)((Points + (Z))->X))
@@ -262,6 +263,22 @@ void BSP_LCD_DisplayChar(uint16_t Xpos, uint16_t Ypos, uint8_t Ascii)
 {
   DrawChar(Xpos, Ypos, &DrawProp.pFont->table[(Ascii-' ') *\
     DrawProp.pFont->Height * ((DrawProp.pFont->Width + 7) / 8)]);
+}
+
+void BSP_LCD_DisplayStringAtSize(uint16_t Xpos, uint16_t Ypos, uint8_t *Text, Line_ModeTypdef Mode, int size)
+{
+
+  /* CUSTOM ADDED - add in spaces to max size */
+  char str[size+1];
+  int len = strlen((char *)Text);
+  int offset = (size+1 - len) / 2;
+
+  memset((void*)str, ' ', size);
+  strncpy(str + offset, Text, len);
+  str[size] = '\0';
+  
+
+  BSP_LCD_DisplayStringAt(Xpos, Ypos, str, Mode);
 }
 
 /**

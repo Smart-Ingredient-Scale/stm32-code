@@ -3,6 +3,7 @@
 #include "screen.h"
 #include "stm32_adafruit_lcd.h"
 #include "ili9341.h"
+#include "stdio.h"
 
 // Usage:
 // Call BSP_LCD_Init() to init the display
@@ -219,9 +220,9 @@ void draw_home_screen(char *item1, char *item2, char *item3) {
     BSP_LCD_FillTriangle(90, 250, 30, 280, 90, 310); // down triangle
     
     // Slot text
-    BSP_LCD_DisplayStringAt(0, 110, (uint8_t *)item1, CENTER_MODE);
-    BSP_LCD_DisplayStringAt(0, 190, (uint8_t *)item2, CENTER_MODE);
-    BSP_LCD_DisplayStringAt(0, 270, (uint8_t *)item3, CENTER_MODE);
+    BSP_LCD_DisplayStringAtSize(0, 110, (uint8_t *)item1, CENTER_MODE, 12);
+    BSP_LCD_DisplayStringAtSize(0, 190, (uint8_t *)item2, CENTER_MODE, 12);
+    BSP_LCD_DisplayStringAtSize(0, 270, (uint8_t *)item3, CENTER_MODE, 12);
 }
 
 void update_home_screen(char *item1, char *item2, char *item3) {
@@ -229,9 +230,9 @@ void update_home_screen(char *item1, char *item2, char *item3) {
     BSP_LCD_SetTextColor(LCD_THEME_PRIMARY_COLOR);
     BSP_LCD_SetFont(&Font24);  
 
-    BSP_LCD_DisplayStringAt(0, 110, (uint8_t *)item1, CENTER_MODE);
-    BSP_LCD_DisplayStringAt(0, 190, (uint8_t *)item2, CENTER_MODE);
-    BSP_LCD_DisplayStringAt(0, 270, (uint8_t *)item3, CENTER_MODE);
+    BSP_LCD_DisplayStringAtSize(0, 110, (uint8_t *)item1, CENTER_MODE, 12);
+    BSP_LCD_DisplayStringAtSize(0, 190, (uint8_t *)item2, CENTER_MODE, 12);
+    BSP_LCD_DisplayStringAtSize(0, 270, (uint8_t *)item3, CENTER_MODE, 12);
 }
 
 // Item Information Screen
@@ -251,7 +252,7 @@ void draw_information_screen(char *ingedient_name, char *density) {
     // Top row
     BSP_LCD_FillRect(160, 80-LINE_OFFSET, 80, LINE_WIDTH); //small vert
     // TODO:home icon
-    BSP_LCD_DisplayStringAt(80, 110, (uint8_t *)ingedient_name, CENTER_MODE);
+    BSP_LCD_DisplayStringAtSize(80, 110, (uint8_t *)ingedient_name, CENTER_MODE, 13);
 
     // Middle row
     BSP_LCD_DisplayStringAt(-60, 190, (uint8_t *)"Unit:", CENTER_MODE);
@@ -265,7 +266,7 @@ void draw_information_screen(char *ingedient_name, char *density) {
     // BSP_LCD_FillRect(0, 180-LINE_OFFSET, 80, LINE_WIDTH); //small vert
     BSP_LCD_SetFont(&Font20);
     BSP_LCD_DisplayStringAt(-30, 260, (uint8_t *)"Density:", CENTER_MODE);
-    BSP_LCD_DisplayStringAt(-30, 290, (uint8_t *)density, CENTER_MODE); //sprintf
+    BSP_LCD_DisplayStringAtSize(-30, 290, (uint8_t *)density, CENTER_MODE, 11);
     BSP_LCD_DisplayStringAt(130, 275, (uint8_t *)"Calibrate", CENTER_MODE);
 }
 
@@ -274,7 +275,7 @@ void update_information_screen(char *ingedient_name, char *density) {
     BSP_LCD_SetTextColor(LCD_THEME_PRIMARY_COLOR);
     BSP_LCD_SetFont(&Font24);
 
-    BSP_LCD_DisplayStringAt(80, 110, (uint8_t *)ingedient_name, CENTER_MODE);
+    BSP_LCD_DisplayStringAtSize(80, 110, (uint8_t *)ingedient_name, CENTER_MODE, 13);
 
     DISPLAY_STRING_WITH_UNITS(UNITS_GRAMS, 20, 190, (uint8_t *)"g", CENTER_MODE);
     DISPLAY_STRING_WITH_UNITS(UNITS_POUNDS, 70, 190, (uint8_t *)"lb", CENTER_MODE);
@@ -282,7 +283,7 @@ void update_information_screen(char *ingedient_name, char *density) {
     DISPLAY_STRING_WITH_UNITS(UNITS_MILLILITERS, 170, 190, (uint8_t *)"mL", CENTER_MODE);
 
     BSP_LCD_SetFont(&Font20);
-    BSP_LCD_DisplayStringAt(-30, 290, (uint8_t *)density, CENTER_MODE);
+    BSP_LCD_DisplayStringAtSize(-30, 290, (uint8_t *)density, CENTER_MODE, 11);
 }
 
 // Volume Calibration Screen
@@ -365,7 +366,7 @@ void draw_mass_cal_screen(char* volume_and_unit) {
 
     BSP_LCD_SetFont(&Font20);
     BSP_LCD_DisplayStringAt(90, 100, (uint8_t *)"Place ", LEFT_MODE);
-    BSP_LCD_DisplayStringAt(170, 100, (uint8_t *)volume_and_unit, LEFT_MODE);
+    BSP_LCD_DisplayStringAtSize(170, 100, (uint8_t *)volume_and_unit, LEFT_MODE, 10);
     BSP_LCD_DisplayStringAt(90, 120, (uint8_t *)"on the scale", LEFT_MODE);
 }
 
@@ -520,7 +521,7 @@ void process_button(struct Screen **cur_screen, process_id_t process_id) {
             if (convert_vol_cal(&volume_selection) != -1) { // check if valid volume selection
                 // Switch Screen
                 (*cur_screen) = &mass_cal_screen;
-                draw_mass_cal_screen("testvol");
+                draw_mass_cal_screen("curvol");
             } else {
                 volume_selection = (struct VolumeSelection){0}; // Reset volume_selection
                 update_vol_cal_screen(&volume_selection);

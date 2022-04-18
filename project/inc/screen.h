@@ -28,7 +28,6 @@
 #define DISPLAY_STRING_WITH_SELECTION(_cur_sel, _x, _y, _text, _mode) DISPLAY_STRING_WITH_HIGHLIGHT((vol_sel -> cur_selection) == _cur_sel, _x, _y, _text, _mode)
 #define DISPLAY_STRING_WITH_UNITS(_units, _x, _y, _text, _mode) DISPLAY_STRING_WITH_HIGHLIGHT(cur_display_unit == _units, _x, _y, _text, _mode)
 
-
 struct Button
 {
 	uint8_t id;
