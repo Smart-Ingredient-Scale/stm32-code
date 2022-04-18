@@ -201,6 +201,10 @@ struct Screen mass_cal_screen = {
     .num_buttons = 2
 };
 
+// Include icons
+extern uint16_t* home_icon;
+extern uint16_t* check_icon;
+
 
 // Home Screen
 void draw_home_screen(char *item1, char *item2, char *item3) {
@@ -246,12 +250,12 @@ void draw_information_screen(char *ingedient_name, char *density) {
     BSP_LCD_FillRect(160-LINE_OFFSET, 0, LINE_WIDTH, 320); //top hori
     BSP_LCD_FillRect(80-LINE_OFFSET, 0, LINE_WIDTH, 320); //bottom hori
 
-    // TEMP: bottom line TODO:
     BSP_LCD_FillRect(0, 180-LINE_OFFSET, 80, LINE_WIDTH); //small vert
 
     // Top row
     BSP_LCD_FillRect(160, 80-LINE_OFFSET, 80, LINE_WIDTH); //small vert
-    // TODO:home icon
+    BSP_LCD_DrawRGB16Image(170, 8, 64, 64, &home_icon);
+
     BSP_LCD_DisplayStringAtSize(80, 110, (uint8_t *)ingedient_name, CENTER_MODE, 13);
 
     // Middle row
@@ -296,7 +300,7 @@ void draw_vol_cal_screen(struct VolumeSelection *vol_sel) {
     // Home icon
     BSP_LCD_FillRect(160, 80-LINE_OFFSET, 80, LINE_WIDTH); //small vert
     BSP_LCD_FillRect(160, 0, LINE_WIDTH, 80); //small hori
-    // TODO:home icon
+    BSP_LCD_DrawRGB16Image(170, 8, 64, 64, &home_icon);
 
     // Arrows and check
     BSP_LCD_FillRect(0, 240-LINE_OFFSET, 240, LINE_WIDTH); //vertical
@@ -307,7 +311,8 @@ void draw_vol_cal_screen(struct VolumeSelection *vol_sel) {
     BSP_LCD_FillTriangle(145, 255, 95, 280, 145, 305); // down triangle
     BSP_LCD_FillTriangle(15, 85, 40, 35, 65, 85); // left triangle
     BSP_LCD_FillTriangle(15, 155, 40, 205, 65, 155); // right triangle
-    // TODO:check icon
+
+    BSP_LCD_DrawRGB16Image(8, 250, 64, 64, &check_icon);
 
     // Boxes around numbers/units
     BSP_LCD_DrawRect(105, 63, 30, 20);
@@ -355,8 +360,7 @@ void draw_mass_cal_screen(char* volume_and_unit) {
     // Home icon
     BSP_LCD_FillRect(160, 80-LINE_OFFSET, 80, LINE_WIDTH); //small vert
     BSP_LCD_FillRect(160, 0, LINE_WIDTH, 80); //small hori
-    // TODO:home icon
-
+    BSP_LCD_DrawRGB16Image(170, 8, 64, 64, &home_icon);
 
     // Bottom button
     BSP_LCD_FillRect(80-LINE_OFFSET, 60-LINE_OFFSET, LINE_WIDTH, 200 + LINE_WIDTH); //hori
