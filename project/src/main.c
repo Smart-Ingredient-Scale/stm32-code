@@ -26,6 +26,7 @@
 #include "load-cell.h"
 #include "spi-ss.h"
 #include "lcd_pwm.h"
+#include "storage.h"
 
 // touchscreen.c
 extern uint16_t ts_xpos;
@@ -60,6 +61,8 @@ int main(void)
     /* actually activate the load cell sampling timer */
     load_cell_enable();
 
+    // Storage Initialization
+    storage_init();
 
     // Touchscreen Initialization
     LCD_PWM_GPIO_Init();
@@ -70,7 +73,14 @@ int main(void)
     init_ts(); // Touchscreen press Init
 
     struct Screen *cur_screen = &home_screen;
-    draw_home_screen("test 1", "test 2", "test3");
+
+    {
+        char *name1 = '\0';
+        char *name2 = '\0';
+        char *name3 = '\0';
+        storage_get_names(&name1, &name2, &name3);
+        draw_home_screen(name1, name2, name3);
+    }
 
     LCD_PWM_Init(50); // Turn on screen
     uint16_t x_pos;

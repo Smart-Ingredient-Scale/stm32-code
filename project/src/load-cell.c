@@ -22,7 +22,10 @@ static inline uint32_t hx711_data_bit(void);
 static inline enum HX711DataStatus_t hx711_data_ready(void);
 
 int32_t zeroADCVal = -64600;
+
+// Grab display settings from screen.c
 extern units_t cur_display_unit;
+extern uint32_t cur_density;
 
 /* Set PB9 for AF = 2 (TIM_CH4 output pin) since it will operate as
  * the clock used for getting data from the HX711 IC */
@@ -231,8 +234,6 @@ static void update_sample(uint32_t newSampleBits) {
     /* update the moving average */
     adc.movingAverage = adc.cumulativeSum >> NUM_STORED_SAMPLES_BITSHIFT;
 }
-
-uint32_t cur_density = 1;
 
 // This function converts the int32_t ADC value from the HX711 to grams/ounces/etc. using arthmetic
 int32_t convert(int32_t x)

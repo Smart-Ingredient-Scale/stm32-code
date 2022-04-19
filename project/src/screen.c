@@ -4,6 +4,7 @@
 #include "stm32_adafruit_lcd.h"
 #include "ili9341.h"
 #include "stdio.h"
+#include "storage.h"
 
 // Usage:
 // Call BSP_LCD_Init() to init the display
@@ -27,6 +28,7 @@ char vol_cal_units[] = VOL_CAL_UNITS;
 
 struct VolumeSelection volume_selection = (struct VolumeSelection){0};
 units_t cur_display_unit = UNITS_GRAMS;
+uint32_t cur_density = 1;
 
 
 // Screen and button variables
@@ -274,20 +276,20 @@ void draw_information_screen(char *ingedient_name, char *density) {
     BSP_LCD_DisplayStringAt(130, 275, (uint8_t *)"Calibrate", CENTER_MODE);
 }
 
-void update_information_screen(char *ingedient_name, char *density) {
+void update_information_screen() {
     BSP_LCD_SetBackColor(LCD_THEME_SECONDARY_COLOR);
     BSP_LCD_SetTextColor(LCD_THEME_PRIMARY_COLOR);
     BSP_LCD_SetFont(&Font24);
 
-    BSP_LCD_DisplayStringAtSize(80, 110, (uint8_t *)ingedient_name, CENTER_MODE, 13);
+    // BSP_LCD_DisplayStringAtSize(80, 110, (uint8_t *)ingedient_name, CENTER_MODE, 13);
 
     DISPLAY_STRING_WITH_UNITS(UNITS_GRAMS, 20, 190, (uint8_t *)"g", CENTER_MODE);
     DISPLAY_STRING_WITH_UNITS(UNITS_POUNDS, 70, 190, (uint8_t *)"lb", CENTER_MODE);
     DISPLAY_STRING_WITH_UNITS(UNITS_OUNCES, 120, 190, (uint8_t *)"oz", CENTER_MODE);
     DISPLAY_STRING_WITH_UNITS(UNITS_MILLILITERS, 170, 190, (uint8_t *)"mL", CENTER_MODE);
 
-    BSP_LCD_SetFont(&Font20);
-    BSP_LCD_DisplayStringAtSize(-30, 290, (uint8_t *)density, CENTER_MODE, 11);
+    // BSP_LCD_SetFont(&Font20);
+    // BSP_LCD_DisplayStringAtSize(-30, 290, (uint8_t *)density, CENTER_MODE, 11);
 }
 
 // Volume Calibration Screen
@@ -464,6 +466,15 @@ int32_t convert_vol_cal(struct VolumeSelection *vol_sel) {
     return res;
 }
 
+void fxdpnt_to_str(int32_t density, char* s) {
+    char str[13] = {'\0'};
+    int pre = density / 100;
+    int post = density % 100;
+
+    sprintf(str, "%d.%.2d", pre, post);
+    strncpy(s, str, 13);
+}
+
 void process_button(struct Screen **cur_screen, process_id_t process_id) {
     obj_id_t screen_id = (*cur_screen) -> id;
     if (screen_id >= MAX_SCREEN_ID) {
@@ -472,36 +483,52 @@ void process_button(struct Screen **cur_screen, process_id_t process_id) {
         panic(err);
     }
 
+    char *name1 = '\0'; // For storing name of items to display on menu
+    char *name2 = '\0';
+    char *name3 = '\0';
+    char density_str[12];
+    
     if (screen_id == HOME_SCREEN_ID) {
         if ((process_id == ITEM1_HOME_PROCESS_ID) |
             (process_id == ITEM2_HOME_PROCESS_ID) |
             (process_id == ITEM3_HOME_PROCESS_ID) ) {
+            
+            // Get current ingredient info
+            struct IngredientInfo ingred = storage_get_ingred_from_menu(process_id - ITEM1_HOME_PROCESS_ID);
+            if (ingred.name[0] == '\0') return; // Invalid storage_get_ingred
+            fxdpnt_to_str(ingred.density, density_str); //convert density int32_t to string
+
             // Switch screen
             (*cur_screen) = &information_screen;
-            draw_information_screen("test", "density");
+            draw_information_screen(ingred.name, density_str);
         } else if (process_id == UP_HOME_PROCESS_ID) {
-            update_home_screen("up", "screen", "used");
+            storage_dec_index();
+            storage_get_names(&name1, &name2, &name3);
+            update_home_screen(name1, name2, name3);
         } else if (process_id == DOWN_HOME_PROCESS_ID) {
-            update_home_screen("down", "screen", "used");
+            storage_inc_index();
+            storage_get_names(&name1, &name2, &name3);
+            update_home_screen(name1, name2, name3);
         }
 
     } else if (screen_id == INFORMATION_SCREEN_ID) {
         if (process_id == HOME_ITEM_PROCESS_ID) {
             // Switch screen
             (*cur_screen) = &home_screen;
-            draw_home_screen("test1", "test2", "test3");          
+            storage_get_names(&name1, &name2, &name3);
+            draw_home_screen(name1, name2, name3);          
         } else if (process_id == UNIT1_ITEM_PROCESS_ID) {
             cur_display_unit = UNITS_GRAMS;
-            update_information_screen("test", "density");
+            update_information_screen();
         } else if (process_id == UNIT2_ITEM_PROCESS_ID) {
             cur_display_unit = UNITS_POUNDS;
-            update_information_screen("test", "density");
+            update_information_screen();
         } else if (process_id == UNIT3_ITEM_PROCESS_ID) {
             cur_display_unit = UNITS_OUNCES;
-            update_information_screen("test", "density");
+            update_information_screen();
         } else if (process_id == UNIT4_ITEM_PROCESS_ID) {
             cur_display_unit = UNITS_MILLILITERS;
-            update_information_screen("test", "density");
+            update_information_screen();
         } else if (process_id == CALIBRATE_ITEM_PROCESS_ID) {
             volume_selection = (struct VolumeSelection){0}; // Reset volume_selection
 
@@ -514,7 +541,8 @@ void process_button(struct Screen **cur_screen, process_id_t process_id) {
         if (process_id == HOME_VOL_CAL_PROCESS_ID) {
             // Switch Screen
             (*cur_screen) = &home_screen;
-            draw_home_screen("test1", "test2", "test3");  
+            storage_get_names(&name1, &name2, &name3);
+            draw_home_screen(name1, name2, name3);  
         } else if ((process_id == UP_VOL_CAL_PROCESS_ID) |
                   (process_id == DOWN_VOL_CAL_PROCESS_ID) |
                   (process_id == LEFT_VOL_CAL_PROCESS_ID) |
@@ -536,11 +564,20 @@ void process_button(struct Screen **cur_screen, process_id_t process_id) {
         if (process_id == HOME_MASS_CAL_PROCESS_ID) {
             // Switch Screen
             (*cur_screen) = &home_screen;
-            draw_home_screen("test1", "test2", "test3");  
+            storage_get_names(&name1, &name2, &name3);
+            draw_home_screen(name1, name2, name3);  
         } else if (process_id == SUBMIT_MASS_CAL_PROCESS_ID) {
-            // Switch Screen
+            // Update ingredient info
+            int idx = storage_get_ingred_idx();
+            storage_update_ingred(idx, 500);
+
+            // Get current ingredient info
+            struct IngredientInfo ingred = storage_get_ingred(idx);
+            fxdpnt_to_str(ingred.density, density_str); //convert density int32_t to string
+
+            // Switch screen
             (*cur_screen) = &information_screen;
-            draw_information_screen("test", "density");
+            draw_information_screen(ingred.name, density_str);
         }
     }
 }

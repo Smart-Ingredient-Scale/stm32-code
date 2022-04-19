@@ -151,7 +151,7 @@ void draw_home_screen(char *item1, char *item2, char *item3);
 void update_home_screen(char *item1, char *item2, char *item3);
 
 void draw_information_screen(char *ingedient_name, char *density);
-void update_information_screen(char *ingedient_name, char *density);
+void update_information_screen();
 
 void draw_vol_cal_screen(struct VolumeSelection *vol_sel);
 void update_vol_cal_screen(struct VolumeSelection *vol_sel);
