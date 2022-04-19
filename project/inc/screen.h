@@ -125,14 +125,15 @@ typedef enum {
 
 #define VOL_CAL_UNITS_LENGTH 5
 // ^ length of the units string + null byte
-#define VOL_CAL_UNITS "cups\000mL  \000unit\000"
+#define VOL_CAL_UNITS "mL  \000cups\000tsp \000tbsp\000"
 
 
 // Units just for volume selection
 typedef enum {
-	VOL_CAL_UNITS_CUPS,
 	VOL_CAL_UNITS_ML,
-	VOL_CAL_UNITS_UNIT,
+	VOL_CAL_UNITS_CUPS,
+	VOL_CAL_UNITS_TSP,
+	VOL_CAL_UNITS_TBSP,
 	VOL_CAL_UNITS_NUM_UNITS
 } vol_cal_units_t;
 
