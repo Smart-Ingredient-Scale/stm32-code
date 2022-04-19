@@ -476,6 +476,38 @@ void fxdpnt_to_str(int32_t density, char* s) {
     strncpy(s, str, 13);
 }
 
+// This conversion function converts from cups/ml/TSP/TBSP to ml
+int32_t vol_cal_convert(int32_t x)
+{
+
+    if(volume_selection.units == VOL_CAL_UNITS_CUPS)
+    {
+        x = x * 23659 / 100; // Cups to ml - mult by 236.588
+    }
+    else if(volume_selection.units == VOL_CAL_UNITS_TSP)
+    {
+        x = 4929 / 1000; // TSP to ml - mult by 4.92892
+    }
+    else if(volume_selection.units == VOL_CAL_UNITS_TBSP)
+    {
+        x = 14787 / 1000; // TSP to ml - mult by 14.7868
+    }
+
+    return x;
+}
+
+// calculate density from g reading (from load-cell.c) and the ml val (from vol_cal_convert)
+int32_t calc_density(int32_t vol_ml)
+{
+    uint32_t density;
+
+    density = curr_g_read / vol_ml;
+
+    return density;
+}
+
+
+
 void process_button(struct Screen **cur_screen, process_id_t process_id) {
     obj_id_t screen_id = (*cur_screen) -> id;
     if (screen_id >= MAX_SCREEN_ID) {
@@ -498,6 +530,9 @@ void process_button(struct Screen **cur_screen, process_id_t process_id) {
             struct IngredientInfo ingred = storage_get_ingred_from_menu(process_id - ITEM1_HOME_PROCESS_ID);
             if (ingred.name[0] == '\0') return; // Invalid storage_get_ingred
             fxdpnt_to_str(ingred.density, density_str); //convert density int32_t to string
+            
+            // Update density variable for 7-seg display
+            cur_density = ingred.density;
 
             // Switch screen
             (*cur_screen) = &information_screen;
@@ -568,49 +603,27 @@ void process_button(struct Screen **cur_screen, process_id_t process_id) {
             storage_get_names(&name1, &name2, &name3);
             draw_home_screen(name1, name2, name3);  
         } else if (process_id == SUBMIT_MASS_CAL_PROCESS_ID) {
+            // Calculate new density
+            int32_t cur_vol = convert_vol_cal(&volume_selection); //get fixed point representation of volume
+            int32_t vol_ml = vol_cal_convert(cur_vol); // convert to ML
+            int32_t new_density = calc_density(vol_ml);
+            
             // Update ingredient info
             int idx = storage_get_ingred_idx();
-            storage_update_ingred(idx, 500);
+            storage_update_ingred(idx, new_density);
 
             // Get current ingredient info
             struct IngredientInfo ingred = storage_get_ingred(idx);
             fxdpnt_to_str(ingred.density, density_str); //convert density int32_t to string
+
+            // Update density variable for 7-seg display
+            cur_density = ingred.density;
 
             // Switch screen
             (*cur_screen) = &information_screen;
             draw_information_screen(ingred.name, density_str);
         }
     }
-}
-
-// This conversion function converts from cups/ml/TSP/TBSP to ml
-int32_t vol_cal_convert(int32_t x)
-{
-
-    if(volume_selection.units == VOL_CAL_UNITS_CUPS)
-    {
-        x = x * 23659 / 100; // Cups to ml - mult by 236.588
-    }
-    else if(volume_selection.units == VOL_CAL_UNITS_TSP)
-    {
-        x = 4929 / 1000; // TSP to ml - mult by 4.92892
-    }
-    else if(volume_selection.units == VOL_CAL_UNITS_TBSP)
-    {
-        x = 14787 / 1000; // TSP to ml - mult by 14.7868
-    }
-
-    return x;
-}
-
-// calculate density from g reading (from load-cell.c) and the ml val (from vol_cal_convert)
-int32_t calc_density(int32_t vol_ml)
-{
-    uint32_t density;
-
-    density = curr_g_read / vol_ml;
-
-    return density;
 }
 
 

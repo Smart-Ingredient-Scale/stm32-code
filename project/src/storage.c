@@ -8,9 +8,9 @@ const int num_ingredients = 8;
 
 struct IngredientInfo ingredients[] = {
     {   .name = "Flour",
-        .density = 122  },
+        .density = 100  },
     {   .name = "Sugar",
-        .density = 123  },
+        .density = 10000  },
     {   .name = "Salt",
         .density = 124  },
     {   .name = "Baking soda",
@@ -97,6 +97,6 @@ void storage_update_ingred(int idx, int32_t density) {
     if (idx >= num_ingredients || idx < 0) {
         return;
     }
-    
+
     ingredients[idx].density = density;
 }
