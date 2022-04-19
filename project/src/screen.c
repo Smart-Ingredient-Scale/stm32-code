@@ -30,6 +30,7 @@ struct VolumeSelection volume_selection = (struct VolumeSelection){0};
 units_t cur_display_unit = UNITS_GRAMS;
 uint32_t cur_density = 1;
 
+extern uint32_t curr_g_read; // from load-cell.c
 
 // Screen and button variables
 
@@ -581,3 +582,35 @@ void process_button(struct Screen **cur_screen, process_id_t process_id) {
         }
     }
 }
+
+// This conversion function converts from cups/ml/TSP/TBSP to ml
+int32_t vol_cal_convert(int32_t x)
+{
+
+    if(volume_selection.units == VOL_CAL_UNITS_CUPS)
+    {
+        x = x * 23659 / 100; // Cups to ml - mult by 236.588
+    }
+    else if(volume_selection.units == VOL_CAL_UNITS_TSP)
+    {
+        x = 4929 / 1000; // TSP to ml - mult by 4.92892
+    }
+    else if(volume_selection.units == VOL_CAL_UNITS_TBSP)
+    {
+        x = 14787 / 1000; // TSP to ml - mult by 14.7868
+    }
+
+    return x;
+}
+
+// calculate density from g reading (from load-cell.c) and the ml val (from vol_cal_convert)
+int32_t calc_density(int32_t vol_ml)
+{
+    uint32_t density;
+
+    density = curr_g_read / vol_ml;
+
+    return density;
+}
+
+

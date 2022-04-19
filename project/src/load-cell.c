@@ -22,6 +22,7 @@ static inline uint32_t hx711_data_bit(void);
 static inline enum HX711DataStatus_t hx711_data_ready(void);
 
 int32_t zeroADCVal = -64600;
+int32_t curr_g_read;
 
 // Grab display settings from screen.c
 extern units_t cur_display_unit;
@@ -241,6 +242,9 @@ int32_t convert(int32_t x)
     // zeroADCVal is a global variable and is set every time the TARE (zero) button is pressed
     x -= zeroADCVal;
     x = x * 1000 / 11200; // conversion factor from ADC value to grams (default)
+    // If it is 1g then x = 100
+
+    curr_g_read = x;
 
     if(cur_display_unit == UNITS_OUNCES)
     {
@@ -252,7 +256,7 @@ int32_t convert(int32_t x)
     }
     else if(cur_display_unit == UNITS_MILLILITERS)
     {
-        x = x / cur_density; // ml = grams / density
+        x = x * 100 / cur_density; // ml = grams / density
     }
 
     return x;
