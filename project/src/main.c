@@ -46,6 +46,7 @@ extern HX711_Data_t adc;                /* contains samples and moving average! 
 int main(void)
 {
     // Seven-seg display initialzation
+    micro_wait(1000000);
     setup_spi1();
     off_display();
     init_display();
