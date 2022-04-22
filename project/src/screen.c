@@ -501,7 +501,7 @@ int32_t calc_density(int32_t vol_ml)
 {
     uint32_t density;
 
-    density = curr_g_read / vol_ml;
+    density = curr_g_read * 100 / vol_ml;
 
     return density;
 }

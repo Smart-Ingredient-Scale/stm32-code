@@ -26,9 +26,9 @@ void storage_update_ingred(int idx, int32_t density);
 // EEPROM
 #define EEPROM_ADDR                 0xa0
 #define DATABASE_ADDR               0x013f
-#define DATABASE_MAGIC              0x2e
+#define DATABASE_MAGIC              0x2f
 #define ENTRY_SIZE                  4
-#define NUM_ENTRIES_PER_BUF         (8 / ENTRY_SIZE)
+#define NUM_ENTRIES_PER_BUF         (32 / ENTRY_SIZE)
 
 
 // Database = big endian

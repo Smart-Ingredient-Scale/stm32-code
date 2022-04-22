@@ -5,30 +5,72 @@
 
 int menu_idx; // For menu traversal
 int cur_ingred_idx; 
-const int num_ingredients = 8; 
-
 
 struct IngredientInfo ingredients[] = {
-    {   .name = "Flour",
-        .density = 100  },
-    {   .name = "Sugar",
-        .density = 10000  },
-    {   .name = "Salt",
-        .density = 124  },
-    {   .name = "Baking soda",
-        .density = 125  },
+     // A - G
+    {   .name = "Bake Powder",
+         .density = 97  },
+    {   .name = "Baking Soda",
+         .density = 210  },
+    {   .name = "Berries",
+         .density = 93  },
+    {   .name = "Bleach",
+         .density = 111  },
+    {   .name = "Brown Sugar",
+          .density = 93  },
     {   .name = "Butter",
-        .density = 126  },
+         .density = 96  },
+
+    {   .name = "Chili Pepper",
+          .density = 36  },
+    {   .name = "Cinnamon",
+          .density = 53  },
+    {   .name = "Cocoa Powder",
+         .density = 138  },
+    {   .name = "Corn Starch",
+            .density = 54  },
+    {   .name = "Diced Onion",
+           .density = 108  },
+    {   .name = "Diced Tomato",
+       .density = 102  },
+
+    {   .name = "Diced Pepper",
+              .density = 102  },
+    {   .name = "Flour",
+        .density = 53  },
+    {   .name = "Ground Cumin",
+          .density = 57  },
+
+    // H - S
+    {   .name = "Large Eggs",
+        .density = 103  },
+    {   .name = "Maple Syrup",
+        .density = 137  },
     {   .name = "Milk",
-        .density = 127  },
-    {   .name = "VegetableOil",
-        .density = 128  },
+        .density = 103  },
+    {   .name = "Mince Garlic",
+             .density = 101  },
+    {   .name = "Olive Oil",
+        .density = 90  },
+    {   .name = "Pepper",
+         .density = 47  },
+    {   .name = "Red Pepper",
+        .density = 36  },
+    {   .name = "Salt",
+        .density = 216  },
+    {   .name = "Sugar",
+        .density = 159  },
+    {   .name = "Tide Pods",
+        .density = 89  },
+
+    // T - Z
     {   .name = "Vanilla Extr",
-        .density = 129  },
-    // {   .name = "Cinnamon",
-    //     .density = 130  },
+        .density = 88  },
+
 };
 
+
+const int num_ingredients = 26;
 
 void storage_init() {
     config_pb6_scl_gpio();
@@ -165,7 +207,7 @@ void load_ingredients_from_eeprom() {
 
     // Load into table
     int ingredients_idx = 0;
-    uint8_t buf[8];
+    uint8_t buf[32];
     uint8_t num_bytes;
     for (int z = 0; z < num_ingredients; z += NUM_ENTRIES_PER_BUF) {
         if (num_ingredients - z < NUM_ENTRIES_PER_BUF) {
