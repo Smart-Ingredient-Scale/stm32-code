@@ -7,7 +7,6 @@
  * @brief   Default main function.
  ******************************************************************************
 */
-
 #include <stdio.h>
 
 #include "stm32f4xx.h"
@@ -114,7 +113,7 @@ int main(void)
         draw_home_screen(name1, name2, name3);
     }
 
-    LCD_PWM_Init(50); // Turn on screen
+    LCD_PWM_Init(100); // Turn on screen
     uint16_t x_pos;
     uint16_t y_pos;
 

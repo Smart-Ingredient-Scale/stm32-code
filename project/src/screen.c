@@ -83,8 +83,8 @@ struct Button information_screen_buttons[MAX_BUTTONS_PER_SCREEN] = {
     {   .id = UNIT1_ITEM_BUTTON_ID,
         .x0 = 105,
         .x1 = 130,
-        .y0 = 130,
-        .y1 = 150,
+        .y0 = 120,
+        .y1 = 160,
         .process_id = UNIT1_ITEM_PROCESS_ID },
 
     {   .id = UNIT2_ITEM_BUTTON_ID,
