@@ -27,6 +27,7 @@
 #include "spi-ss.h"
 #include "lcd_pwm.h"
 #include "storage.h"
+#include "eeprom.h"
 
 // touchscreen.c
 extern uint16_t ts_xpos;
@@ -62,10 +63,41 @@ int main(void)
     /* actually activate the load cell sampling timer */
     load_cell_enable();
 
-    // Storage Initialization
+    // Storage Initialization (initializes the EEPROM bit bang)
     storage_init();
 
+#if 0    
+    /* send the byte 0xF0 to memory address oxAA */
+    write_byte_eeprom(0x00AA, 0xF0);
+    write_byte_eeprom(0x00AB, 0xF1);
+    uint8_t byte1 = read_byte_eeprom(0x00AA);
+    uint8_t byte2 = read_byte_eeprom(0x00AB);
+#endif
+
+    /* send consecutive streams of bytes to the EEPROM and read again */
+    const uint8_t srcArr[MAX_PAGE_SIZE_BYTES] = {0xca, 0x49, 0x60, 0x26, 0x9d, 0x38, 0xab, 0x58, 0x90, 0x57, 0x8c, 0x9, 0x90, 0x1f, 0x1b, 0x2e, 0x9f, 0x9e, 0x79, 0xc, 0x7b, 0xe9, 0xc1, 0x5, 0xb8, 0x69, 0xd, 0x9f, 0xbc, 0x54, 0xbf, 0x2d};
+    uint8_t destArr[MAX_PAGE_SIZE_BYTES] = {0};
+
+    uint8_t numSent1, numRcvd1;
+
+    write_byte_eeprom(0x013f, 0xBE);
+    uint8_t test = read_byte_eeprom(0x013F);
+
+    /* make sure start on a 32-byte page boundary on reads AND writes */
+    numSent1 = write_page_eeprom(0x0140, srcArr, MAX_PAGE_SIZE_BYTES);
+    numRcvd1 = read_page_eeprom(0x0140, destArr, MAX_PAGE_SIZE_BYTES);
+
+    if(test != 0xBE) {
+        while(1);
+    }
+
+    if (memcmp(destArr, srcArr, MAX_PAGE_SIZE_BYTES) != 0) {
+        while(1);
+    }
+
+
     // Touchscreen Initialization
+#if 0
     LCD_PWM_GPIO_Init();
     LCD_PWM_TIM_Init();
     LCD_PWM_Init(1); // Turn off backlight while loading inital screen
@@ -120,7 +152,7 @@ int main(void)
         ss_display_num(converted);
 
     }
-
+#endif /* IF 0 */
 
     for(;;);
 }

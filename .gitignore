@@ -6,3 +6,5 @@ Debug/
 *Run.cfg
 .DS_Store
 .settings
+*.cfg
+*.xml

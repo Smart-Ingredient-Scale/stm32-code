@@ -1,5 +1,6 @@
 #include "stm32f4xx.h"
 #include "storage.h"
+#include "eeprom.h"
 
 int menu_idx; // For menu traversal
 int cur_ingred_idx; 
@@ -28,7 +29,8 @@ struct IngredientInfo ingredients[] = {
 };
 
 void storage_init() {
-    // TODO: eeprom
+    config_pb6_scl_gpio();
+    config_pb7_sda_gpio();
 
     menu_idx = 0;
     cur_ingred_idx = 0;
