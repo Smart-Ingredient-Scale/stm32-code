@@ -123,7 +123,7 @@ void eeprom_init_pins() {
     GPIO_InitTypeDef  GPIO_InitStructure;
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
     GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
     GPIO_PinAFConfig(GPIOB, GPIO_PinSource6, GPIO_AF_I2C1);
@@ -135,10 +135,10 @@ void eeprom_init_i2c() {
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1, ENABLE);
     I2C_InitTypeDef I2C_InitStructure;
 
-	I2C_InitStructure.I2C_ClockSpeed = 10000; //400,000
+	I2C_InitStructure.I2C_ClockSpeed = 10000; //50,000
 	I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
 	I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;
-	I2C_InitStructure.I2C_OwnAddress1 = 0x30; 
+	I2C_InitStructure.I2C_OwnAddress1 = 0x00; 
 	I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
 	I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
 	I2C_Init(I2C1, &I2C_InitStructure);
@@ -159,7 +159,7 @@ void eeprom_sw_reset() {
 void eeprom_byte_write(uint16_t addr, uint8_t data) {
     // Send start event and slave address
     I2C_GenerateSTART(I2C1, ENABLE);
-    while(!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_MODE_SELECT)); 
+    while(!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_MODE_SELECT));
     I2C_Send7bitAddress(I2C1, EEPROM_ADDR, I2C_Direction_Transmitter);
     while(!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED));
 
@@ -167,13 +167,13 @@ void eeprom_byte_write(uint16_t addr, uint8_t data) {
     uint8_t upper_addr = addr >> 8;
     uint8_t lower_addr = addr & 0xFF;
 	I2C_SendData(I2C1, upper_addr);
-	while(!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
+	while(I2C1->SR1 & I2C_SR1_ADDR == 0); // while(!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
 	I2C_SendData(I2C1, lower_addr);
-	while(!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
+	while(I2C1->SR1 & I2C_SR1_ADDR == 0); // while(!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
 
     // Send data
 	I2C_SendData(I2C1, data);
-	while(!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTED));  
+	while(I2C1->SR1 & I2C_SR1_ADDR == 0); // while(!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTED));  
 
     // Send stop
     I2C_GenerateSTOP(I2C1, ENABLE);
