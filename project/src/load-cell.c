@@ -241,7 +241,7 @@ int32_t convert(int32_t x)
 {
     // zeroADCVal is a global variable and is set every time the TARE (zero) button is pressed
     x -= zeroADCVal;
-    x = x * 1000 / 11200; // conversion factor from ADC value to grams (default)
+    x = x * 1000 / 10580; // conversion factor from ADC value to grams (default)
     // If it is 1g then x = 100
 
     curr_g_read = x;
